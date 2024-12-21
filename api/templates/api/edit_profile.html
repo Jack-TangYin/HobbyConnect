@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h2>Edit Profile</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <hr>
+    <h3>Change Password</h3>
+    {{ password_form|crispy }}
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}

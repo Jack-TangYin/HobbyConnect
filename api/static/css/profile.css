@@ -1,0 +1,9 @@
+/* Custom Profile Avatar */
+.profile-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    border: 2px solid #f8f9fa; /* Optional border */
+    background-color: black; /* Light background */
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load static %} 
+{% load crispy_forms_tags %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link
+      rel="stylesheet"
+      href="{% static 'plugins/bootstrap-5.3.3/css/bootstrap.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'plugins/bootstrap-5.3.3/bootstrap-icons/font/bootstrap-icons.css' %}"
+    />
+  </head>
+  <body>
+    <div
+      class="container d-flex justify-content-center align-items-center min-vh-100"
+    >
+      <div
+        class="card p-4 shadow rounded-3"
+        style="width: 100%; max-width: 650px"
+      >
+        <h2 class="text-center mb-2">Sign in</h2>
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="rememberMe" />
+              <label class="form-check-label" for="rememberMe"
+                >Remember me</label
+              >
+            </div>
+            <a href="#" class="text-decoration-none" style="color: #0d6efd"
+              >Forgot password?</a
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Sign in</button>
+
+          <!-- Horizontal line with "or" text -->
+          <div class="d-flex align-items-center my-3">
+            <hr class="flex-grow-1" style="border-top: 2px solid #000;"/>
+            <span class="mx-2" style="position: relative; top: -3px;">or</span>
+            <hr class="flex-grow-1" style="border-top: 2px solid #000;"/>
+          </div>
+
+          <!-- Continue with Gmail button -->
+          <button type="submit" class="btn btn-outline-danger w-100 rounded-3">
+            <img
+              src="../static/img/icons8-google-96.png"
+              alt="Google Icon"
+              width="32"
+              height="32"
+              class="me-2"
+            />
+            Continue with Google
+          </button>
+
+          <div class="text-center mt-3">
+            Don't have an account?
+            <a
+              href="/register/"
+              class="text-decoration-none"
+              style="color: #0d6efd"
+              >Sign up</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
