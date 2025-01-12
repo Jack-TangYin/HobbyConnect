@@ -12,8 +12,12 @@ https://docs.djangoproject.com/en/stable/ref/settings/
 
 from . import database
 import os
+from dotenv import load_dotenv  # Load environment variables from .env file
 
 from pathlib import Path
+
+# Load environment variables from the .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -94,12 +98,14 @@ WSGI_APPLICATION = 'project.wsgi.application'
 #     'default': database.config()
 # }
 
+# Get the database information from the environment variable (.env file) ~ os.getenv('...')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_hobbyconnect',  # Database name
+        'NAME': 'django_hobbyconnect',  # Database name - use this when creating your local database (or change the name)
         'USER': 'root',
-        'PASSWORD': 'root123',
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),  # Database password
         'HOST':'127.0.0.1', 
         'PORT':'3306',
     }
@@ -159,7 +165,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 INTERNAL_IPS = ['127.0.0.1']
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'http://localhost:5173'
 
 LOGOUT_REDIRECT_URL = 'login'
 
