@@ -10,7 +10,7 @@
       export default defineComponent({
           data() {
               return {
-                  title: "Other Page",
+                  title: "Connect Page",
               }
           }
       })
