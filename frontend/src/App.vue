@@ -1,23 +1,4 @@
-<!-- <template>
-    <main class="container pt-4">
-        <div>
-            <router-link
-                class=""
-                :to="{name: 'Main Page'}"
-            >
-                Main Page
-            </router-link>
-            |
-            <router-link
-                class=""
-                :to="{name: 'Connect Page'}"
-            >
-                Connect Page
-            </router-link>
-        </div>
-        <RouterView class="flex-shrink-0" />
-    </main>
-</template> -->
+
 <template>
     <div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -85,11 +66,13 @@
 import { defineComponent } from "vue";
 import { RouterView } from "vue-router";
 
+const baseUrl = 'http://localhost:8000'
+
 export default defineComponent({
     components: { RouterView },
     methods: {
         logout() {
-            window.location.href = "http://127.0.0.1:8000/login";
+            window.location.href = `${baseUrl}/login`;
         }
     }
 });
