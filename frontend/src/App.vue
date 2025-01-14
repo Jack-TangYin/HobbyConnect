@@ -64,13 +64,12 @@
             >
             </a>
             <!-- Aligns dropdown menu within viewport -->
-            <!-- <ul class="dropdown-menu dropdown-menu-end">
-              <li><router-link class="dropdown-item" to="{name: 'Profile Page'}">Profile</router-link></li>
-              <li><a class="dropdown-item" href="#">Settings</a>
-            <router-link class="dropdown-item" to="{name: 'Settings Page'}">Settings</router-link></li>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><router-link class="dropdown-item" :to="{name: 'Profile Page'}">Profile</router-link></li>
+              <li><router-link class="dropdown-item" :to="{name: 'Settings Page'}">Settings</router-link></li>
               <li><hr class="dropdown-divider" /></li>
-              <li><router-link class="dropdown-item" to="{name: 'Login Page'}">Sign Out</router-link></li>
-            </ul> -->
+              <li><button class="dropdown-item" @click="logout()">Sign Out</button></li>
+            </ul>
           </li>
         </ul>
       </div>
@@ -88,6 +87,11 @@ import { RouterView } from "vue-router";
 
 export default defineComponent({
     components: { RouterView },
+    methods: {
+        logout() {
+            window.location.href = "http://127.0.0.1:8000/login";
+        }
+    }
 });
 
 </script>

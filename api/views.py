@@ -16,7 +16,8 @@ from django.contrib.auth import update_session_auth_hash
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
     template_name = 'api/register.html'
-    success_url = reverse_lazy('home')
+    # success_url = reverse_lazy('home')
+    success_url = 'http://localhost:5173'
 
     def form_valid(self, form):
         response = super().form_valid(form)
