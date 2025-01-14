@@ -20,12 +20,14 @@ from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
 from .views import SimilarUsersView
 
-# from .views import main_spa
-from .views import SignUpView, ProfileView, EditProfileView
+
+from .views import SignUpView, ProfileView, EditProfileView, users_api
 urlpatterns = [
-    # path('', main_spa),
-    path('register/', SignUpView.as_view(), name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
+    path('users', users_api, name='users api'),
+    # path('user/', user_api, name='user api'),
+    # The following are no longer used in the project, moved to frontend (however I haven't tested this)
+    path('register/', SignUpView.as_view(), name='register'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),

@@ -1,8 +1,6 @@
 from django.http import HttpResponse, HttpRequest, JsonResponse
-from django.shortcuts import render
 from django.views.generic import CreateView, TemplateView, UpdateView
 from django.contrib.auth import login
-from django.shortcuts import redirect
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -14,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from .utils import get_filtered_and_sorted_users
+import json
 
 # def main_spa(request: HttpRequest) -> HttpResponse:
 #     return render(request, 'api/spa/index.html', {})

@@ -36,7 +36,16 @@ class Hobby(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
+        """Return the name of the hobby"""
         return self.name
+    
+    def as_dict(self):
+        """Return the hobby as a dictionary"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description
+        }
     
 
 class CustomUser(AbstractUser):
@@ -46,15 +55,17 @@ class CustomUser(AbstractUser):
     
     # Optionally, __str__ method can be customized
     def __str__(self):
-        return self.username
+        """Return the first and last name of the user"""
+        return f"{self.first_name} {self.last_name}"
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def as_dict(self):
+        """Return the user as a dictionary"""
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'date_of_birth': self.date_of_birth,
+            'hobbies': [hobby.as_dict() for hobby in self.hobbies.all()]
+        }
