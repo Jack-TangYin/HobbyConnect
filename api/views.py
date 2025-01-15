@@ -9,6 +9,11 @@ from django.urls import reverse_lazy
 from .models import CustomUser
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from .utils import get_filtered_and_sorted_users
 
 # def main_spa(request: HttpRequest) -> HttpResponse:
 #     return render(request, 'api/spa/index.html', {})
@@ -53,3 +58,27 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['password_form'] = PasswordChangeForm(user=self.request.user)
         return context
+    
+class SimilarUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        min_age = int(request.GET.get('min_age', 0))
+        max_age = int(request.GET.get('max_age', 100))
+
+        users = get_filtered_and_sorted_users(user, min_age, max_age)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        result_page = paginator.paginate_queryset(users, request)
+        return paginator.get_paginated_response({
+            'users': [
+                {
+                    'id': u.id,
+                    'username': u.username,
+                    'common_hobbies': u.common_hobbies,
+                    'age': (date.today() - u.date_of_birth).days // 365,
+                } for u in result_page
+            ]
+        })
