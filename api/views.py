@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from .utils import flatten_errors, get_filtered_and_sorted_users
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 import json
 from datetime import date
 
@@ -75,29 +76,76 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         context['password_form'] = PasswordChangeForm(user=self.request.user)
         return context
     
-class fetch_similar_users_api(APIView):
-    permission_classes = [IsAuthenticated]
+    
+@login_required
+@require_http_methods(["GET"])
+def fetch_similar_users_api(request: HttpRequest) -> JsonResponse:
+    """
+    Returns a paginated JSON list of users who have the most similar set of hobbies,
+    filtered by an age range. Only 10 users are returned per page.
 
-    def get(self, request):
-        user = request.user
-        min_age = int(request.GET.get('min_age', 0))
-        max_age = int(request.GET.get('max_age', 100))
+    Query Parameters:
+      - min_age: Minimum age of users (default: 0)
+      - max_age: Maximum age of users (default: 100)
+      - page: Page number (default: 1)
 
-        users = get_filtered_and_sorted_users(user, min_age, max_age)
+    Response JSON structure:
+        {
+          "results": [ list of user dicts ],
+          "count": <total matching users>,
+          "current_page": <page number>,
+          "total_pages": <number of pages>
+        }
+    """
+    # Log the query parameters (optional for debugging)
+    print("Query Params:", request.GET.dict())
+    
+    # Retrieve and convert query parameters
+    try:
+        min_age = int(request.GET.get("min_age", 0))
+    except (TypeError, ValueError):
+        min_age = 0
 
-        paginator = PageNumberPagination()
-        paginator.page_size = 10
-        result_page = paginator.paginate_queryset(users, request)
-        return paginator.get_paginated_response({
-            'users': [
-                {
-                    'id': u.id,
-                    'username': u.username,
-                    'common_hobbies': u.common_hobbies,
-                    'age': (date.today() - u.date_of_birth).days // 365,
-                } for u in result_page
-            ]
+    try:
+        max_age = int(request.GET.get("max_age", 100))
+    except (TypeError, ValueError):
+        max_age = 100
+
+    try:
+        page = int(request.GET.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
+
+    # Get the filtered and sorted queryset.
+    # This function returns users ordered by the number of common hobbies (desc)
+    users_queryset = get_filtered_and_sorted_users(request.user, min_age, max_age)
+    
+    # Set up the paginator to display 10 users per page.
+    paginator = Paginator(users_queryset, 10)
+    paged_users = paginator.get_page(page)
+    
+    # Build the list of users for the current page.
+    users_list = []
+    today = date.today()
+    for u in paged_users:
+        # Calculate user's age if date_of_birth is present.
+        age = (today - u.date_of_birth).days // 365 if u.date_of_birth else None
+        users_list.append({
+            "id": u.id,
+            "username": u.username,
+            "common_hobbies": u.common_hobbies,
+            "age": age,
         })
+    
+    # Return only the users needed for the current page along with pagination info.
+    response_data = {
+        "results": users_list,
+        "count": paginator.count,
+        "current_page": paged_users.number,
+        "total_pages": paginator.num_pages,
+    }
+    
+    return JsonResponse(response_data)
 
 
 def logout_view(request):
@@ -108,7 +156,7 @@ def logout_view(request):
     return JsonResponse({'message': 'Logged out'})
 
 
-def user_api(request: HttpRequest) -> HttpResponse:
+def     user_api(request: HttpRequest) -> HttpResponse:
     """
     API endpoint for the collection of users
     
