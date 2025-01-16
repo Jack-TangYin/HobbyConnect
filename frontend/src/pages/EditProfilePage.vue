@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-5">
     <h2>Edit Profile</h2>
-    
+
     <!-- Core Profile Edit Form -->
     <form @submit.prevent="submitProfileForm" class="mb-4">
       <h3>Profile Details</h3>
@@ -36,7 +36,9 @@
           placeholder="Leave blank to keep the same"
         />
       </div>
-      <button type="submit" class="btn btn-primary me-2">Save Profile Changes</button>
+      <button type="submit" class="btn btn-primary me-2">
+        Save Profile Changes
+      </button>
       <button type="button" class="btn btn-secondary" @click="clearProfileForm">
         Clear
       </button>
@@ -44,7 +46,7 @@
       <span v-if="profileError" class="ms-2 text-danger">{{ profileError }}</span>
       <span v-else-if="profileMessage" class="ms-2 text-success">{{ profileMessage }}</span>
     </form>
-    
+
     <hr />
 
     <!-- Password Change Form -->
@@ -52,17 +54,34 @@
       <h3>Change Password</h3>
       <div class="mb-3">
         <label for="old_password" class="form-label">Old Password</label>
-        <input type="password" id="old_password" v-model="passwordForm.old_password" class="form-control" />
+        <input
+          type="password"
+          id="old_password"
+          v-model="passwordForm.old_password"
+          class="form-control"
+        />
       </div>
       <div class="mb-3">
         <label for="new_password" class="form-label">New Password</label>
-        <input type="password" id="new_password" v-model="passwordForm.new_password" class="form-control" />
+        <input
+          type="password"
+          id="new_password"
+          v-model="passwordForm.new_password"
+          class="form-control"
+        />
       </div>
       <div class="mb-3">
         <label for="confirm_password" class="form-label">Confirm New Password</label>
-        <input type="password" id="confirm_password" v-model="passwordForm.confirm_password" class="form-control" />
+        <input
+          type="password"
+          id="confirm_password"
+          v-model="passwordForm.confirm_password"
+          class="form-control"
+        />
       </div>
-      <button type="submit" class="btn btn-primary me-2">Change Password</button>
+      <button type="submit" class="btn btn-primary me-2">
+        Change Password
+      </button>
       <button type="button" class="btn btn-secondary" @click="clearPasswordForm">
         Clear
       </button>
@@ -78,15 +97,49 @@
       <h3>Manage Hobbies</h3>
       <div class="mb-3">
         <label for="new_hobby" class="form-label">Add Hobby</label>
-        <input
-          type="text"
-          id="new_hobby"
-          v-model="newHobby"
-          class="form-control"
-          placeholder="Hobby name"
-        />
-        <button type="button" class="btn btn-success mt-2 me-2" @click="addHobby">Add Hobby</button>
-        <button type="button" class="btn btn-secondary mt-2" @click="clearHobbyInput">Clear</button>
+        <!-- Custom Autocomplete Input with Dropdown -->
+        <div class="position-relative">
+          <input
+            type="text"
+            id="new_hobby"
+            v-model="newHobby"
+            class="form-control"
+            placeholder="Hobby name"
+            @input="onHobbyInput"
+            @focus="showSuggestions = true"
+          />
+          <!-- Dropdown Suggestions: filtered suggestions based on input -->
+          <ul
+            v-if="showSuggestions && filteredSuggestions.length"
+            class="list-group position-absolute w-100"
+            style="z-index: 1000; max-height: 200px; overflow-y: auto;"
+          >
+            <li
+              v-for="suggestion in filteredSuggestions"
+              :key="suggestion"
+              class="list-group-item list-group-item-action"
+              @click="selectSuggestion(suggestion)"
+              style="cursor: pointer;"
+            >
+              {{ suggestion }}
+            </li>
+          </ul>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-success mt-2 me-2"
+          @click="handleAddHobby"
+        >
+          Add Hobby
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary mt-2"
+          @click="clearHobbyInput"
+        >
+          Clear
+        </button>
         <!-- Display error or success message for hobbies section -->
         <span v-if="hobbiesError" class="ms-2 text-danger">{{ hobbiesError }}</span>
         <span v-else-if="hobbiesMessage" class="ms-2 text-success">{{ hobbiesMessage }}</span>
@@ -95,36 +148,39 @@
         <h4>Your Hobbies:</h4>
         <span v-if="user.hobbies && user?.hobbies.length">
           <span
-            v-for="hobby in user.hobbies"
+            v-for="hobby in user?.hobbies"
             :key="hobby.id"
             class="badge rounded-pill text-black fs-6 px-3 py-2 me-2 mb-2"
-            style="background-color: #FEE715;"
+            style="background-color: #fee715"
           >
             {{ hobby.name }}
             <button
               type="button"
               class="btn-close btn-close-white ms-2"
               aria-label="Remove"
-              @click="removeHobby(hobby.id)"
+              @click="handleRemoveHobby(hobby.id)"
             ></button>
           </span>
         </span>
         <p v-else class="text-muted">You haven’t added any hobbies yet.</p>
       </div>
-    </div>
 
-    <!-- Cancel Button -->
-    <div class="text-center">
-      <button type="button" class="btn btn-danger" @click="cancelEdit">Cancel</button>
+      <!-- Return Button -->
+      <div class="text-center">
+        <button type="button" class="btn btn-danger" @click="cancelEdit">
+          Return
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
+import { defineComponent, onMounted, reactive, ref, computed, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { getCSRFToken, useAuthStore } from "../stores/authStore";
+import { useHobbiesStore } from "../stores/hobbiesStore";
 import type { UserFormData, PasswordFormData } from "../types/types";
 
 export default defineComponent({
@@ -132,6 +188,7 @@ export default defineComponent({
   setup() {
     const router = useRouter();
     const authStore = useAuthStore();
+    const hobbiesStore = useHobbiesStore();
     const { user } = storeToRefs(authStore);
     const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -149,6 +206,7 @@ export default defineComponent({
     });
 
     const newHobby = ref("");
+    const showSuggestions = ref(false);
 
     // Reactive message variables for each section
     const profileMessage = ref("");
@@ -158,10 +216,27 @@ export default defineComponent({
     const hobbiesMessage = ref("");
     const hobbiesError = ref("");
 
+    // Computed: filter suggestions based on newHobby input (case-insensitive)
+    const filteredSuggestions = computed(() => {
+      if (!newHobby.value.trim()) return hobbiesStore.autocompleteSuggestions;
+      return hobbiesStore.autocompleteSuggestions.filter((suggestion: string) =>
+        suggestion.toLowerCase().includes(newHobby.value.toLowerCase())
+      );
+    });
+
+    // Fetch hobbies when component mounts
+    onMounted(() => {
+      hobbiesStore.fetchHobbies();
+      document.addEventListener("click", handleClickOutside);
+    });
+    
+    onBeforeUnmount(() => {
+      document.removeEventListener("click", handleClickOutside);
+    });
+
     // Submit Profile Changes using PUT
     const submitProfileForm = async (): Promise<void> => {
       try {
-        // Clear any previous messages
         profileError.value = "";
         profileMessage.value = "";
         const data = { ...profileForm };
@@ -174,7 +249,7 @@ export default defineComponent({
         });
         const response = await fetch(`${baseUrl}/api/update-profile/`, {
           method: "PUT",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken(),
           },
@@ -183,12 +258,13 @@ export default defineComponent({
         });
         const responseData = await response.json();
         if (!response.ok) {
-          // Set error message (displayed in red)
-          profileError.value = responseData.message || "Failed to update profile.";
+          profileError.value =
+            responseData.message || "Failed to update profile.";
           throw new Error(profileError.value);
         }
         console.log("Profile updated", responseData);
-        profileMessage.value = responseData.message || "Profile updated successfully.";
+        profileMessage.value =
+          responseData.message || "Profile updated successfully.";
         await authStore.fetchUser();
       } catch (error: any) {
         console.error("Error updating profile:", error.message);
@@ -214,7 +290,7 @@ export default defineComponent({
         const data = { ...passwordForm };
         const response = await fetch(`${baseUrl}/api/change-password/`, {
           method: "PUT",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken(),
           },
@@ -223,14 +299,19 @@ export default defineComponent({
         });
         const responseData = await response.json();
         if (!response.ok) {
-          passwordError.value = responseData.message || "Failed to change password.";
-          console.log('passwordError.value', passwordError.value);
+          passwordError.value =
+            responseData.message || "Failed to change password.";
+          console.log("passwordError.value", passwordError.value);
           throw new Error(passwordError.value);
         }
         console.log("Password updated", responseData);
-        passwordMessage.value = responseData.message || "Password changed successfully.";
+        passwordMessage.value =
+          responseData.message || "Password changed successfully.";
       } catch (error: any) {
         console.error("Error updating password:", error.message);
+        if (error.message) {
+          passwordError.value = error.message;
+        }
       }
     };
 
@@ -242,64 +323,34 @@ export default defineComponent({
       passwordError.value = "";
     };
 
-    // Add a hobby using PUT
-    const addHobby = async (): Promise<void> => {
+    // Handle Add Hobby with Store Integration
+    const handleAddHobby = async (): Promise<void> => {
       if (!newHobby.value.trim()) return;
       try {
         hobbiesError.value = "";
         hobbiesMessage.value = "";
-        const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
-          method: "PUT",
-          headers: { 
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            action: "add",
-            hobby: newHobby.value.trim(),
-          }),
-        });
-        const responseData = await response.json();
-        if (!response.ok) {
-          hobbiesError.value = responseData.message || "Failed to add hobby.";
-          throw new Error(hobbiesError.value);
-        }
-        console.log("Hobby added", responseData);
-        hobbiesMessage.value = responseData.message || "Hobby added successfully.";
+        const message = await hobbiesStore.addHobby(newHobby.value);
+        hobbiesMessage.value = message;
+        newHobby.value = "";
+        showSuggestions.value = false;
         await authStore.fetchUser();
       } catch (error: any) {
         console.error("Error adding hobby:", error.message);
+        hobbiesError.value = error.message;
       }
     };
 
-    // Remove a hobby using PUT
-    const removeHobby = async (hobbyId: string): Promise<void> => {
+    // Handle Remove Hobby with Store Integration
+    const handleRemoveHobby = async (hobbyId: string): Promise<void> => {
       try {
         hobbiesError.value = "";
         hobbiesMessage.value = "";
-        const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
-          method: "PUT",
-          headers: { 
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            action: "remove",
-            hobby_id: hobbyId,
-          }),
-        });
-        const responseData = await response.json();
-        if (!response.ok) {
-          hobbiesError.value = responseData.message || "Failed to remove hobby.";
-          throw new Error(hobbiesError.value);
-        }
-        console.log("Hobby removed", responseData);
-        hobbiesMessage.value = responseData.message || "Hobby removed successfully.";
+        const message = await hobbiesStore.removeHobby(hobbyId);
+        hobbiesMessage.value = message;
         await authStore.fetchUser();
       } catch (error: any) {
         console.error("Error removing hobby:", error.message);
+        hobbiesError.value = error.message;
       }
     };
 
@@ -307,10 +358,32 @@ export default defineComponent({
       newHobby.value = "";
       hobbiesMessage.value = "";
       hobbiesError.value = "";
+      showSuggestions.value = false;
     };
 
     const cancelEdit = (): void => {
       router.back();
+    };
+
+    // Handle input for autocomplete suggestions
+    const onHobbyInput = (): void => {
+      // Simply ensure that suggestions are visible; filtering is handled by computed property.
+      showSuggestions.value = true;
+    };
+
+    // When a suggestion is clicked, fill in the input and hide suggestions
+    const selectSuggestion = (suggestion: string): void => {
+      newHobby.value = suggestion;
+      showSuggestions.value = false;
+    };
+
+    // Hide suggestions when clicking outside the component
+    const handleClickOutside = (event: MouseEvent): void => {
+      const target = event.target as HTMLElement;
+      // If the click is outside our component's area, hide suggestions.
+      if (!target.closest(".position-relative")) {
+        showSuggestions.value = false;
+      }
     };
 
     return {
@@ -318,6 +391,8 @@ export default defineComponent({
       profileForm,
       passwordForm,
       newHobby,
+      showSuggestions,
+      filteredSuggestions,
       profileMessage,
       profileError,
       passwordMessage,
@@ -326,12 +401,15 @@ export default defineComponent({
       hobbiesError,
       submitProfileForm,
       submitPasswordForm,
-      addHobby,
-      removeHobby,
+      handleAddHobby,
+      handleRemoveHobby,
       clearProfileForm,
       clearPasswordForm,
       clearHobbyInput,
       cancelEdit,
+      onHobbyInput,
+      selectSuggestion,
+      hobbiesStore, // Expose the hobbies store for autocomplete suggestions
     };
   },
 });

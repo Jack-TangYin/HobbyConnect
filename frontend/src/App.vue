@@ -89,10 +89,12 @@
 import { defineComponent, onMounted } from "vue";
 import { RouterView } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
+import { useHobbiesStore } from "./stores/hobbiesStore";
 
 export default defineComponent({
   setup() {
     const authStore = useAuthStore();
+    const hobbiesStore = useHobbiesStore();
 
     onMounted(async () => {
       try {
@@ -100,7 +102,12 @@ export default defineComponent({
           console.log("Fetching user data...");
           await authStore.fetchUser();
         }
+        if (!hobbiesStore.hobbies.length) {
+          console.log("Fetching hobbies data...");
+          await hobbiesStore.fetchHobbies();
+        }
         console.log("user: ", authStore.username);
+        console.log("hobbies: ", hobbiesStore.hobbies);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
