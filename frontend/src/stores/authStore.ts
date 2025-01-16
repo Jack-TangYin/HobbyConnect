@@ -1,13 +1,7 @@
 import { defineStore } from 'pinia';
-import { UserData, Hobby } from '../types/types';
+import { UserData, Hobby, AuthState } from '../types/types';
 
 const baseUrl = 'http://localhost:8000';
-
-// Define the shape of the state
-interface AuthState {
-    user: UserData | null;
-    isAuthenticated: boolean;
-}
 
 export const useAuthStore = defineStore('auth', {
     state: (): AuthState => {
