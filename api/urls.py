@@ -21,11 +21,13 @@ from django.contrib.auth import views as auth_views
 from .views import SimilarUsersView
 
 
-from .views import SignUpView, ProfileView, EditProfileView, users_api
+from .views import SignUpView, ProfileView, EditProfileView, users_api, user_api, logout_view, set_csrf_token
 urlpatterns = [
+    path('set-csrf-token/', set_csrf_token, name='set_csrf_token'),
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
-    path('users', users_api, name='users api'),
-    # path('user/', user_api, name='user api'),
+    path('logout/', logout_view, name='logout'),
+    path('users/', users_api, name='users api'),
+    path('user/', user_api, name='user api'),
     # The following are no longer used in the project, moved to frontend (however I haven't tested this)
     path('register/', SignUpView.as_view(), name='register'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),

@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.views.generic import CreateView, TemplateView, UpdateView
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -12,10 +12,24 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from .utils import get_filtered_and_sorted_users
+from django.contrib.auth.decorators import login_required
 import json
+
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 
 # def main_spa(request: HttpRequest) -> HttpResponse:
 #     return render(request, 'api/spa/index.html', {})
+
+@ensure_csrf_cookie
+@require_http_methods(['GET'])
+def set_csrf_token(request):
+    """
+    We set the CSRF cookie on the frontend.
+    """
+    return JsonResponse({'message': 'CSRF cookie set'})
+
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -30,8 +44,10 @@ class SignUpView(CreateView):
         login(self.request, CustomUser)
         return response
     
+    
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'api/profile.html'
+
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
     model = CustomUser
@@ -81,3 +97,54 @@ class SimilarUsersView(APIView):
                 } for u in result_page
             ]
         })
+
+
+def logout_view(request):
+    """
+    API endpoint for logging the user out
+    """
+    logout(request)
+    return JsonResponse({'message': 'Logged out'})
+
+
+def user_api(request: HttpRequest) -> HttpResponse:
+    """
+    API endpoint for the collection of users
+    
+    Supports GET methods
+    """
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+    
+    
+    if request.method == 'GET':
+        user_data = request.user.as_dict()
+        return JsonResponse(user_data)
+    
+    # Return a 405 Method Not Allowed response for all other request methods
+    return HttpResponse(status=405)
+
+
+def users_api(request, user_id):
+    """
+    API endpoint for handling operations on a single user
+    
+    Supports PUT, and DELETE methods
+    """
+    
+    user = CustomUser.objects.get(id=user_id)
+
+    if request.method == 'PUT':
+        # Update user attributes and save changes
+        PUT = json.loads(request.body)
+        user.name = PUT['name']
+        user.save()
+        return JsonResponse(user.as_dict())
+
+    if request.method == 'DELETE':
+        # Delete the user
+        user.delete()
+        return JsonResponse({})
+
+    # Default response is the user data in JSON format
+    return JsonResponse(user.as_dict())

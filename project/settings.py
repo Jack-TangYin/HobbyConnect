@@ -51,14 +51,26 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'crispy_forms',
-    "crispy_bootstrap5",
+    'crispy_bootstrap5',
+    'corsheaders',
 ]
+
+SESSION_COOKIE_DOMAIN = "localhost"
+
+SESSION_COOKIE_PATH = '/'
+
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]  # We add your frontend URL here.
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']  # We add your frontend URL here.
+
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -169,4 +181,4 @@ LOGIN_REDIRECT_URL = 'http://localhost:5173'
 
 LOGOUT_REDIRECT_URL = 'login'
 
-LOGIN_URL = 'login'
+LOGIN_URL = 'http://localhost:8000/login'
