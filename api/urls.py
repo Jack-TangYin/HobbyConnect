@@ -18,20 +18,23 @@ from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
-from .views import SimilarUsersView, SendFriendRequestView
 
 
-from .views import SignUpView, ProfileView, EditProfileView, users_api, user_api, logout_view, set_csrf_token
+from .views import *
 urlpatterns = [
     path('set-csrf-token/', set_csrf_token, name='set_csrf_token'),
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
     path('logout/', logout_view, name='logout'),
     path('users/', users_api, name='users api'),
     path('user/', user_api, name='user api'),
+    path('update-profile/', update_profile_api, name='update profile api'),
+    path('change-password/', change_password_api, name='change password api'),
+    path('update-hobbies/', update_hobbies_api, name='update hobbies api'),
+    path('fetch-hobbies/', fetch_hobbies_api, name='fetch hobbies api'),
     # The following are no longer used in the project, moved to frontend (however I haven't tested this)
     path('register/', SignUpView.as_view(), name='register'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('profile/', ProfileView.as_view(), name='profile'),
-    path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
+    # path('profile/', ProfileView.as_view(), name='profile'),
+    # path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
     path('api/send-friend-request/', SendFriendRequestView.as_view(), name='send-friend-request'),
 ]

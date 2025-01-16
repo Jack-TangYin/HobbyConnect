@@ -4,23 +4,23 @@ from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import CustomUser
+from .models import CustomUser, Hobby
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
-from .utils import get_filtered_and_sorted_users
+from .utils import flatten_errors, get_filtered_and_sorted_users
 from django.contrib.auth.decorators import login_required
 import json
 
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.csrf import csrf_exempt
+from typing import Any, Dict
+from django.utils.dateparse import parse_date
 
-# def main_spa(request: HttpRequest) -> HttpResponse:
-#     return render(request, 'api/spa/index.html', {})
 
 @ensure_csrf_cookie
 @require_http_methods(['GET'])
@@ -148,6 +148,165 @@ def users_api(request, user_id):
 
     # Default response is the user data in JSON format
     return JsonResponse(user.as_dict())
+
+
+@login_required
+@require_http_methods(["PUT"])
+def update_profile_api(request: HttpRequest) -> JsonResponse:
+    """
+    Update username, email, or date of birth.
+    If a field is not provided or is blank, its current value remains unchanged.
+    Before updating, checks are performed so that the new username or email 
+    do not already exist for another user.
+    """
+    try:
+        data: Dict[str, Any] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    user: CustomUser = request.user
+    updated_fields: list[str] = []
+
+    # Update username if provided
+    if 'username' in data and data['username']:
+        new_username: str = data['username']
+        # Check if the new username exists for another user
+        if CustomUser.objects.filter(username=new_username).exclude(pk=user.pk).exists():
+            return JsonResponse({'message': 'Username already taken'}, status=400)
+        else:
+            user.username = new_username
+            updated_fields.append('username')
+
+    # Update email if provided
+    if 'email' in data and data['email']:
+        new_email: str = data['email']
+        # Check if the new email exists for another user
+        if CustomUser.objects.filter(email=new_email).exclude(pk=user.pk).exists():
+            return JsonResponse({'message': 'Email already taken'}, status=400)
+        else:
+            user.email = new_email
+            updated_fields.append('email')
+
+    # Update date of birth if provided and valid
+    if 'dateOfBirth' in data and data['dateOfBirth']:
+        parsed_date = parse_date(data['dateOfBirth'])
+        if parsed_date:
+            user.date_of_birth = parsed_date
+            updated_fields.append('date of birth')
+        else:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+    user.save()
+    if updated_fields:
+        message = f'Updated: {", ".join(updated_fields)}'
+    else:
+        message = 'No fields updated.'
+    return JsonResponse({'message': message})
+
+
+@login_required
+@require_http_methods(["PUT"])
+def change_password_api(request: HttpRequest) -> JsonResponse:
+    """
+    Update user password.
+    Prevent changing to the same password.
+    """
+    try:
+        data: Dict[str, Any] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    old_password = data.get('old_password', '')
+    new_password = data.get('new_password', '')
+    
+    if not old_password or not new_password:
+        return JsonResponse({'message': 'All password fields are required'}, status=400)
+    
+    # Check if the new password is the same as the old password
+    if old_password == new_password:
+        return JsonResponse({'message': 'The new password must be different from the old password.'}, status=400)
+    
+    password_data: Dict[str, str] = {
+        'old_password': old_password,
+        'new_password1': new_password,
+        'new_password2': new_password,
+    }
+    
+    password_form = PasswordChangeForm(user=request.user, data=password_data)
+    if password_form.is_valid():
+        password_form.save()
+        update_session_auth_hash(request, request.user)
+        return JsonResponse({'message': 'Password changed successfully'})
+    else:
+        # Flatten the errors into a single string
+        error_message = flatten_errors(password_form.errors)
+        print(password_form.errors)
+        return JsonResponse({'message': error_message}, status=400)
+
+
+@login_required
+@require_http_methods(["PUT"])
+def update_hobbies_api(request: HttpRequest) -> JsonResponse:
+    """
+    Update user's hobbies.
+    
+    Expects a JSON payload with:
+      - "action": "add" or "remove"
+      - "hobby": (string) for adding, or
+      - "hobby_id": (number) for removing.
+    
+    For 'add':  
+      If the hobby already exists in the Hobby table, it is retrieved and added to the user's hobbies.
+      If it does not exist, it is created, then added to the user's hobbies.
+    
+    For 'remove':  
+      Only the association between the user and the hobby is removed;
+      the hobby remains in the Hobby table.
+    """
+    try:
+        data: Dict[str, Any] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    action: str = data.get('action', '')
+    user: CustomUser = request.user  # type: ignore
+
+    if action == "add":
+        hobby_name: str = data.get('hobby', '').strip()
+        if not hobby_name:
+            return JsonResponse({'error': 'Hobby name required'}, status=400)
+        # get_or_create returns a tuple of (object, created)
+        hobby, _ = Hobby.objects.get_or_create(name=hobby_name)
+        user.hobbies.add(hobby)
+        user.save()
+        return JsonResponse({
+            'message': f'Hobby "{hobby_name}" added',
+            'hobbies': [h.as_dict() for h in user.hobbies.all()]
+        })
+    elif action == "remove":
+        hobby_id = data.get('hobby_id')
+        try:
+            hobby = Hobby.objects.get(id=hobby_id)
+        except Hobby.DoesNotExist:
+            return JsonResponse({'error': 'Hobby not found'}, status=404)
+        user.hobbies.remove(hobby)
+        user.save()
+        return JsonResponse({
+            'message': f'Hobby "{hobby.name}" removed',
+            'hobbies': [h.as_dict() for h in user.hobbies.all()]
+        })
+    else:
+        return JsonResponse({'error': 'Invalid action'}, status=400)
+
+
+@require_http_methods(["GET"])
+def fetch_hobbies_api(request: HttpRequest) -> JsonResponse:
+    """
+    Returns a list of all hobbies available in the database.
+    Useful for frontend autocomplete.
+    """
+    hobbies = Hobby.objects.all()
+    return JsonResponse({'hobbies': [h.as_dict() for h in hobbies]})
 
 
 class SendFriendRequestView(APIView):

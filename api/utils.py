@@ -23,4 +23,19 @@ def get_filtered_and_sorted_users(user, min_age, max_age):
     return filtered_users.annotate(
         common_hobbies=Count('hobbies', filter=Q(hobbies__in=user.hobbies.all()))
     ).order_by('-common_hobbies')
+    
+
+def flatten_errors(errors: dict) -> str:
+    """
+    Convert a Django form errors dictionary into a single string.
+    """
+    messages = []
+    for field, error_list in errors.items():
+        # error_list is usually a list of error messages
+        if isinstance(error_list, list):
+            messages.extend(error_list)
+        else:
+            messages.append(str(error_list))
+    return " ".join(messages)
+
 
