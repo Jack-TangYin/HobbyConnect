@@ -7,8 +7,8 @@
   
   <script lang="ts">
   import { defineComponent } from 'vue';
-  import AgeFilter from '../components/AgeFilter.vue';
-  import UsersList from '../components/UsersList.vue';
+  import AgeFilter from '../pages/AgeFilter.vue';
+  import UsersList from '../pages/UsersList.vue';
   
   export default defineComponent({
     components: {

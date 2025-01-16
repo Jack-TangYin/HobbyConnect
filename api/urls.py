@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
-from .views import SimilarUsersView
+from .views import SimilarUsersView, SendFriendRequestView
 
 
 from .views import SignUpView, ProfileView, EditProfileView, users_api, user_api, logout_view, set_csrf_token
@@ -33,4 +33,5 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
+    path('api/send-friend-request/', SendFriendRequestView.as_view(), name='send-friend-request'),
 ]

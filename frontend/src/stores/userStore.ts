@@ -6,6 +6,7 @@ interface User {
     username: string;
     age: number;
     common_hobbies: number;
+    hobbies: string[];
 }
 
 export const useUserStore = defineStore('user', {

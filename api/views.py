@@ -148,3 +148,19 @@ def users_api(request, user_id):
 
     # Default response is the user data in JSON format
     return JsonResponse(user.as_dict())
+
+
+class SendFriendRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        friend_id = request.data.get('friend_id')
+        if not friend_id:
+            return Response({'error': 'Friend ID is required.'}, status=400)
+
+        try:
+            friend = CustomUser.objects.get(id=friend_id)
+            # Add logic to send a friend request (e.g., save to FriendRequest model)
+            return Response({'message': 'Friend request sent successfully!'}, status=200)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=404)
