@@ -3,7 +3,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
         <router-link class="navbar-brand" :to="{ name: 'Main Page' }"
-          >Main Page</router-link
+          >HobbyConnect</router-link
         >
         <button
           class="navbar-toggler"
@@ -79,7 +79,7 @@
         </div>
       </div>
     </nav>
-    <div class="container p-5">
+    <div class="container">
       <RouterView class="flex-shrink-0" />
     </div>
   </div>

@@ -3,7 +3,7 @@
     <h2>Edit Profile</h2>
 
     <!-- Core Profile Edit Form -->
-    <form @submit.prevent="submitProfileForm" class="mb-4">
+    <form @submit.prevent="submitProfileForm" class="mb-4 mt-4">
       <h3>Profile Details</h3>
       <div class="mb-3">
         <label for="username" class="form-label">Username</label>

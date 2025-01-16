@@ -1,3 +1,10 @@
+from api.models import CustomUser
+from dateutil.relativedelta import relativedelta
+from django.db.models import Count, Q
+from datetime import date
+from django.core.paginator import Paginator
+
+
 def get_similar_users(user):
     return CustomUser.objects.annotate(
         common_hobbies=Count('hobbies', filter=Q(hobbies__in=user.hobbies.all()))

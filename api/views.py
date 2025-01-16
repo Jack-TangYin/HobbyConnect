@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from .utils import flatten_errors, get_filtered_and_sorted_users
 from django.contrib.auth.decorators import login_required
 import json
+from datetime import date
 
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
@@ -74,7 +75,7 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         context['password_form'] = PasswordChangeForm(user=self.request.user)
         return context
     
-class SimilarUsersView(APIView):
+class fetch_similar_users_api(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

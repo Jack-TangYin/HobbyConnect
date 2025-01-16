@@ -53,6 +53,7 @@ class CustomUser(AbstractUser):
     # The AbstractUser model already includes username, password, email, first_name, last_name
     date_of_birth = models.DateField(null=True, blank=True)
     hobbies = models.ManyToManyField(Hobby, blank=True)
+    friends = models.ManyToManyField('self', blank=True)
     
     # Optionally, __str__ method can be customized
     def __str__(self):
@@ -68,5 +69,6 @@ class CustomUser(AbstractUser):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'dateOfBirth': format_date(self.date_of_birth, "d F, Y") if self.date_of_birth else None,
-            'hobbies': [hobby.as_dict() for hobby in self.hobbies.all()]
+            'hobbies': [hobby.as_dict() for hobby in self.hobbies.all()],
+            'friends': [CustomUser.as_dict() for friend in self.friends.all()]
         }

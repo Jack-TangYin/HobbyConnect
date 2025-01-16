@@ -1,21 +1,26 @@
 <template>
-    <div class="h3">
-      {{ title }}
-    </div>
-  </template>
-  
-  <script lang="ts">
-      import { defineComponent } from "vue";
-  
-      export default defineComponent({
-          data() {
-              return {
-                  title: "Connect Page",
-              }
-          }
-      })
-  </script>
-  
-  <style scoped>
-  </style>
-  
+  <div>
+    <AgeFilter />
+    <UsersList />
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import AgeFilter from "../pages/AgeFilter.vue";
+import UsersList from "../pages/UsersList.vue";
+
+export default defineComponent({
+    setup() {
+        
+        return {
+            AgeFilter,
+            UsersList,
+        };
+    },
+  components: {
+    AgeFilter,
+    UsersList,
+  },
+});
+</script>
