@@ -31,18 +31,19 @@
             </li>
           </ul>
 
-          <!-- Right-aligned items with 'Jack' touching the edge -->
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <!-- Right-aligned items with 'Username' touching the edge -->
+          <!-- Right-aligned items with username and notification bell -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+            <!-- Notification bell dropdown -->
+            <FriendRequestsDropdown />
+
+            <!-- Username dropdown -->
             <li class="nav-item" style="position: relative; right: -15px">
               <a class="nav-link active" aria-current="page">
-                <!-- {{user.username}} -->
-                {{authStore.username}}
+                {{ authStore.username }}
               </a>
             </li>
-            <li
-              class="nav-item dropdown"
-              style="position: relative; bottom: -2px"
-            >
+            <li class="nav-item dropdown" style="position: relative; bottom: -2px">
               <a
                 class="nav-link dropdown-toggle"
                 href="#"
@@ -51,27 +52,22 @@
                 aria-expanded="false"
               >
               </a>
-              <!-- Aligns dropdown menu within viewport -->
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                  <router-link
-                    class="dropdown-item"
-                    :to="{ name: 'Profile Page' }"
-                    >Profile</router-link
-                  >
+                  <router-link class="dropdown-item" :to="{ name: 'Profile Page' }">
+                    Profile
+                  </router-link>
                 </li>
                 <li>
-                  <router-link
-                    class="dropdown-item"
-                    :to="{ name: 'Settings Page' }"
-                    >Settings</router-link
-                  >
+                  <router-link class="dropdown-item" :to="{ name: 'Settings Page' }">
+                    Settings
+                  </router-link>
                 </li>
-                <li><hr class="dropdown-divider" /></li>
                 <li>
-                  <button class="dropdown-item" @click="logout()">
-                    Sign Out
-                  </button>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <button class="dropdown-item" @click="logout()">Sign Out</button>
                 </li>
               </ul>
             </li>
@@ -90,6 +86,7 @@ import { defineComponent, onMounted } from "vue";
 import { RouterView } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
 import { useHobbiesStore } from "./stores/hobbiesStore";
+import FriendRequestsDropdown from "./components/FriendRequestsDropdown.vue";
 
 export default defineComponent({
   setup() {
@@ -122,7 +119,7 @@ export default defineComponent({
     };
     return { authStore, logout };
   },
-  components: { RouterView },
+  components: { RouterView, FriendRequestsDropdown },
 });
 </script>
 

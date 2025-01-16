@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { UserData, Hobby, AuthState } from '../types/types';
 
-const baseUrl = 'http://localhost:8000';
+const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
 export const useAuthStore = defineStore('auth', {
     state: (): AuthState => {
