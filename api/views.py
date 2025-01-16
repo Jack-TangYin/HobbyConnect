@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import CustomUser, Hobby
+from .models import CustomUser, Hobby, FriendRequest
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from rest_framework.views import APIView
@@ -362,13 +362,54 @@ class SendFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        friend_id = request.data.get('friend_id')
-        if not friend_id:
-            return Response({'error': 'Friend ID is required.'}, status=400)
+        receiver_id = request.data.get('receiver_id')
+        if not receiver_id:
+            return Response({'error': 'Receiver ID is required.'}, status=400)
 
         try:
-            friend = CustomUser.objects.get(id=friend_id)
-            # Add logic to send a friend request (e.g., save to FriendRequest model)
-            return Response({'message': 'Friend request sent successfully!'}, status=200)
+            receiver = CustomUser.objects.get(id=receiver_id)
+            if FriendRequest.objects.filter(sender=request.user, receiver=receiver, status='pending').exists():
+                return Response({'error': 'Friend request already sent.'}, status=400)
+
+            FriendRequest.objects.create(sender=request.user, receiver=receiver)
+            return Response({'message': 'Friend request sent successfully!'}, status=201)
+
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found.'}, status=404)
+        
+class FriendRequestListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        friend_requests = FriendRequest.objects.filter(receiver=request.user, status='pending')
+        requests_data = [
+            {
+                'id': req.id,
+                'sender': req.sender.username,
+                'timestamp': req.timestamp,
+            } for req in friend_requests
+        ]
+        return Response(requests_data)
+
+
+class FriendRequestActionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        action = request.data.get('action')  # 'accept' or 'reject'
+
+        try:
+            friend_request = FriendRequest.objects.get(id=pk, receiver=request.user)
+
+            if action == 'accept':
+                friend_request.status = 'accepted'
+                # Optionally, add logic to create a friendship (e.g., adding to a friendship model)
+            elif action == 'reject':
+                friend_request.status = 'rejected'
+            else:
+                return Response({'error': 'Invalid action.'}, status=400)
+
+            friend_request.save()
+            return Response({'message': f'Friend request {action}ed successfully!'})
+        except FriendRequest.DoesNotExist:
+            return Response({'error': 'Friend request not found.'}, status=404)
