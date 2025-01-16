@@ -22,25 +22,25 @@
             <h4 class="fw-bold" style="color: #101820;">
               <i class="bi bi-person"></i> Username:
             </h4>
-            <p class="text-muted">{{ user.username }}</p>
+            <p class="text-muted">{{ user?.username }}</p>
 
             <h4 class="fw-bold" style="color: #101820;">
               <i class="bi bi-envelope"></i> Email:
             </h4>
-            <p class="text-muted">{{ user.email }}</p>
+            <p class="text-muted">{{ user?.email }}</p>
 
             <h4 class="fw-bold" style="color: #101820;">
               <i class="bi bi-calendar"></i> Date of Birth:
             </h4>
-            <p class="text-muted">{{ user.date_of_birth }}</p>
+            <p class="text-muted">{{ user?.dateOfBirth }}</p>
 
             <h4 class="fw-bold" style="color: #101820;">
               <i class="bi bi-heart"></i> Hobbies:
             </h4>
             <div>
-              <span v-if="user.hobbies && user.hobbies.length">
+              <span v-if="user.hobbies && user?.hobbies.length">
                 <span
-                  v-for="hobby in user.hobbies"
+                  v-for="hobby in user?.hobbies"
                   :key="hobby.id"
                   class="badge rounded-pill text-black fs-6 px-3 py-2"
                   style="background-color: #FEE715;"
@@ -66,22 +66,16 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useAuthStore } from "../stores/authStore";
 
 export default defineComponent({
-  data() {
-    return {
-      title: "Profile Page",
-      user: {
-        username: "JohnDoe", // Replace with actual data
-        email: "johndoe@example.com", // Replace with actual data
-        date_of_birth: "1990-01-01", // Replace with actual data
-        hobbies: [
-          { id: 1, name: "Reading" },
-          { id: 2, name: "Gaming" },
-        ], // Replace with actual data
-      },
-    };
-  },
+  setup() {
+    const authStore = useAuthStore();
+
+    const user = authStore.user;
+
+    return { user };
+  }
 });
 </script>
 

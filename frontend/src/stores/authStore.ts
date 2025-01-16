@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { UserData } from '../types/user';
+import { UserData, Hobby } from '../types/types';
 
 const baseUrl = 'http://localhost:8000';
 
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
         username: (state): string => state.user?.username ?? '',
         email: (state): string => state.user?.email ?? '',
         dateOfBirth: (state): string => state.user?.dateOfBirth ?? '',
-        hobbies: (state): string[] => state.user?.hobbies ?? [],
+        hobbies: (state): Hobby[] => state.user?.hobbies ?? [],
     },
     actions: {
         async setCsrfToken(): Promise<void> {
