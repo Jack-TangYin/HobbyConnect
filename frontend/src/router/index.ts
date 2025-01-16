@@ -9,7 +9,6 @@ import ConnectPage from '../pages/ConnectPage.vue';
 import ProfilePage from '../pages/ProfilePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
 import EditProfilePage from '../pages/EditProfilePage.vue';
-import SimilarUsersPage from '../pages/SimilarUsersPage.vue';
 
 let base = (import.meta.env.MODE == 'development') ? import.meta.env.BASE_URL : ''
 
@@ -24,7 +23,6 @@ const router = createRouter({
         { path: '/profile/', name: 'Profile Page', component: ProfilePage },
         { path: '/edit-profile/', name: 'Edit Profile Page', component: EditProfilePage },
         { path: '/settings/', name: 'Settings Page', component: SettingsPage },
-        {path: '/similar-users/', name: 'Similar Users Page', component: SimilarUsersPage},
     ]
 })
 

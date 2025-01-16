@@ -25,6 +25,7 @@ export const useAuthStore = defineStore('auth', {
         email: (state): string => state.user?.email ?? '',
         dateOfBirth: (state): string => state.user?.dateOfBirth ?? '',
         hobbies: (state): Hobby[] => state.user?.hobbies ?? [],
+        friends: (state): UserData[] => state.user?.friends ?? [],
     },
     actions: {
         async setCsrfToken(): Promise<void> {

@@ -5,6 +5,7 @@ export interface UserData {
     email: string;
     dateOfBirth: string;
     hobbies: Hobby[];
+    friends: UserData[];
 }
 
 // Type definitions for hobby
