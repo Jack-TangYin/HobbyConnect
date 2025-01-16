@@ -66,6 +66,6 @@ class CustomUser(AbstractUser):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'date_of_birth': self.date_of_birth,
+            'date_of_birth': self.date_of_birth.isoformat() if self.date_of_birth else None,
             'hobbies': [hobby.as_dict() for hobby in self.hobbies.all()]
         }
