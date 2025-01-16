@@ -79,7 +79,7 @@
         </div>
       </div>
     </nav>
-    <div class="container">
+    <div class="container p-5">
       <RouterView class="flex-shrink-0" />
     </div>
   </div>

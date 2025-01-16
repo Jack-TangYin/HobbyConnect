@@ -1,6 +1,6 @@
 <template>
-  <div class="h1">
-    {{ title }}
+  <div class="mt-5 text-center p-5"> 
+    <h1>Welcome to HobbyConnect!</h1>
   </div>
 </template>
 
