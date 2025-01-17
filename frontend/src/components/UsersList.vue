@@ -45,36 +45,51 @@
   </div>
 </template>
 
-
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue';
 import { useUserStore } from '../stores/userStore';
 import { getCSRFToken, useAuthStore } from '../stores/authStore';
 
-const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
+// Define the structure of a User object
+interface User {
+  id: number;
+  username: string;
+  age?: number; // Optional if the user does not have a DOB
+  common_hobbies?: number; // Optional, since it might not be computed
+  is_friend: boolean;
+  has_pending_request: boolean;
+}
+
+const baseUrl: string = import.meta.env.VITE_APP_API_BASE_URL;
 
 export default defineComponent({
   name: 'UsersList',
   setup() {
+    // Use Pinia stores
     const userStore = useUserStore();
     const authStore = useAuthStore();
 
-    onMounted(async () => {
+    // Fetch users on component mount
+    onMounted(async (): Promise<void> => {
       await userStore.fetchUsers(userStore.minAge, userStore.maxAge, 1);
     });
 
-    const fetchPreviousPage = () => {
+    // Fetch the previous page of users
+    const fetchPreviousPage = (): void => {
       if (userStore.currentPage > 1) {
         userStore.fetchUsers(userStore.minAge, userStore.maxAge, userStore.currentPage - 1);
       }
     };
-    const fetchNextPage = () => {
+
+    // Fetch the next page of users
+    const fetchNextPage = (): void => {
       if (userStore.currentPage < userStore.totalPages) {
         userStore.fetchUsers(userStore.minAge, userStore.maxAge, userStore.currentPage + 1);
       }
     };
 
-    const sendFriendRequest = async (receiver_id: number) => {
+    // Send a friend request
+    const sendFriendRequest = async (receiver_id: number): Promise<void> => {
       try {
         const response = await fetch(`${baseUrl}/api/send-friend-request/`, {
           method: 'POST',
@@ -83,13 +98,13 @@ export default defineComponent({
             'X-CSRFToken': getCSRFToken(),
           },
           credentials: 'include',
-          body: JSON.stringify({ receiver_id: receiver_id }),
+          body: JSON.stringify({ receiver_id }),
         });
         if (!response.ok) {
           throw new Error('Failed to send friend request.');
         }
         await userStore.fetchUsers(userStore.minAge, userStore.maxAge, 1);
-      } catch (error) {
+      } catch (error: unknown) {
         alert('Error sending friend request');
         console.error(error);
       }

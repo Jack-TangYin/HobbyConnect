@@ -2,9 +2,7 @@
   <div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <router-link class="navbar-brand" :to="{ name: 'Main Page' }"
-          >HobbyConnect</router-link
-        >
+        <router-link class="navbar-brand" :to="{ name: 'Main Page' }">HobbyConnect</router-link>
         <button
           class="navbar-toggler"
           type="button"
@@ -20,28 +18,21 @@
           <!-- Main navigation items on the left -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <router-link class="nav-link" :to="{ name: 'Main Page' }"
-                >Home</router-link
-              >
+              <router-link class="nav-link" :to="{ name: 'Main Page' }">Home</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" :to="{ name: 'Connect Page' }"
-                >Connect</router-link
-              >
+              <router-link class="nav-link" :to="{ name: 'Connect Page' }">Connect</router-link>
             </li>
           </ul>
 
-          <!-- Right-aligned items with 'Username' touching the edge -->
-          <!-- Right-aligned items with username and notification bell -->
+          <!-- Right-aligned items -->
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
             <!-- Notification bell dropdown -->
             <FriendRequestsDropdown />
 
-            <!-- Username dropdown -->
+            <!-- Username and dropdown -->
             <li class="nav-item" style="position: relative; right: -15px">
-              <a class="nav-link active" aria-current="page">
-                {{ authStore.username }}
-              </a>
+              <a class="nav-link active" aria-current="page">{{ authStore.username }}</a>
             </li>
             <li class="nav-item dropdown" style="position: relative; bottom: -2px">
               <a
@@ -50,22 +41,15 @@
                 role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
-              >
-              </a>
+              ></a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'Profile Page' }">
-                    Profile
-                  </router-link>
+                  <router-link class="dropdown-item" :to="{ name: 'Profile Page' }">Profile</router-link>
                 </li>
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'Settings Page' }">
-                    Settings
-                  </router-link>
+                  <router-link class="dropdown-item" :to="{ name: 'Settings Page' }">Settings</router-link>
                 </li>
-                <li>
-                  <hr class="dropdown-divider" />
-                </li>
+                <li><hr class="dropdown-divider" /></li>
                 <li>
                   <button class="dropdown-item" @click="logout()">Sign Out</button>
                 </li>
@@ -90,6 +74,8 @@ import { useFriendRequestStore } from "./stores/friendRequestStore";
 import FriendRequestsDropdown from "./components/FriendRequestsDropdown.vue";
 
 export default defineComponent({
+  name: "App",
+  components: { RouterView, FriendRequestsDropdown },
   setup() {
     const authStore = useAuthStore();
     const hobbiesStore = useHobbiesStore();
@@ -109,23 +95,24 @@ export default defineComponent({
           console.log("Fetching friend requests...");
           await friendRequestStore.fetchRequests();
         }
-        console.log("user: ", authStore.username);
-        console.log("hobbies: ", hobbiesStore.hobbies);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+
+        console.log("User:", authStore.user?.username);
+        console.log("Hobbies:", hobbiesStore.hobbies);
+      } catch (error: unknown) {
+        console.error("Error initializing app:", error instanceof Error ? error.message : error);
       }
     });
 
-    const logout = async () => {
+    const logout = async (): Promise<void> => {
       try {
         await authStore.logout();
-      } catch (error) {
-        console.error(error)
+      } catch (error: unknown) {
+        console.error("Error during logout:", error instanceof Error ? error.message : error);
       }
     };
+
     return { authStore, logout };
   },
-  components: { RouterView, FriendRequestsDropdown },
 });
 </script>
 

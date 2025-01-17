@@ -18,12 +18,13 @@ export default defineComponent({
     UsersList,
   },
   setup() {
+    // Use the User Store from Pinia
     const userStore = useUserStore();
 
     // Load initial users on mount with default filters
-    onMounted(async () => {
+    onMounted(async (): Promise<void> => {
       await userStore.fetchUsers(userStore.minAge, userStore.maxAge, 1);
-      console.log('userStore', userStore.users);
+      console.log('Loaded users:', userStore.users);
     });
 
     return {};

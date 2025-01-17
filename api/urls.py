@@ -1,4 +1,9 @@
-"""project URL Configuration
+"""
+
+project URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/3.2/topics/http/urls/
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -13,15 +18,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+from typing import List
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
+from django.urls.resolvers import URLPattern
+from .views import (
+    set_csrf_token, logout_view, users_api, user_api, update_profile_api,
+    change_password_api, update_hobbies_api, fetch_hobbies_api, fetch_similar_users_api,
+    send_friend_request_api, fetch_friend_requests_api, handle_friend_request_api, SignUpView
+)
 
-
-from .views import *
-urlpatterns = [
+# Type annotation for urlpatterns
+urlpatterns: List[URLPattern] = [
     path('set-csrf-token/', set_csrf_token, name='set_csrf_token'),
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
     path('logout/', logout_view, name='logout'),
@@ -32,13 +44,8 @@ urlpatterns = [
     path('update-hobbies/', update_hobbies_api, name='update hobbies api'),
     path('fetch-hobbies/', fetch_hobbies_api, name='fetch hobbies api'),
     path('fetch-similar-users/', fetch_similar_users_api, name='fetch similar users api'),
-    # The following are no longer used in the project, moved to frontend (however I haven't tested this)
     path('register/', SignUpView.as_view(), name='register'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    # path('profile/', ProfileView.as_view(), name='profile'),
-    # path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
     path('send-friend-request/', send_friend_request_api, name='send-friend-request'),
-    path('fetch-friend-requests/', fetch_friend_requests_api , name='friend-requests'),
+    path('fetch-friend-requests/', fetch_friend_requests_api, name='friend-requests'),
     path('handle-friend-request/<int:pk>/', handle_friend_request_api, name='friend-request-action'),
 ]
-

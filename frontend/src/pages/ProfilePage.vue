@@ -38,9 +38,9 @@
               <i class="bi bi-heart"></i> Hobbies:
             </h4>
             <div>
-              <span v-if="user.hobbies && user?.hobbies.length">
+              <span v-if="user?.hobbies && user.hobbies.length">
                 <span
-                  v-for="hobby in user?.hobbies"
+                  v-for="hobby in user.hobbies"
                   :key="hobby.id"
                   class="badge rounded-pill text-black fs-6 px-3 py-2"
                   style="background-color: #FEE715;"
@@ -67,15 +67,18 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useAuthStore } from "../stores/authStore";
+import type { UserData } from "../types/types";
 
 export default defineComponent({
+  name: "ProfilePage",
   setup() {
     const authStore = useAuthStore();
 
-    const user = authStore.user;
+    // Use the AuthStore to retrieve the user object
+    const user: UserData | null = authStore.user;
 
     return { user };
-  }
+  },
 });
 </script>
 

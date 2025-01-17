@@ -1,6 +1,5 @@
 <template>
   <li class="nav-item dropdown position-relative">
-    <!-- Notification bell button with badge if there are pending requests -->
     <a
       class="nav-link dropdown-toggle"
       href="#"
@@ -9,16 +8,15 @@
       aria-expanded="false"
     >
       <i class="bi bi-bell"></i>
-      <!-- Badge for notifications -->
-      <span v-if="requests.length" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      <span
+        v-if="requests.length"
+        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+      >
         {{ requests.length }}
       </span>
     </a>
-    <!-- Dropdown menu -->
     <ul class="dropdown-menu dropdown-menu-end">
-      <li v-if="loading" class="dropdown-item text-center">
-        Loading...
-      </li>
+      <li v-if="loading" class="dropdown-item text-center">Loading...</li>
       <li v-else-if="!requests.length" class="dropdown-item text-center">
         No friend requests
       </li>
@@ -27,11 +25,23 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <strong>{{ req.sender }}</strong>
-              <small class="text-muted d-block">Sent at: {{ formatDate(req.timestamp) }}</small>
+              <small class="text-muted d-block">
+                Sent at: {{ formatDate(req.timestamp) }}
+              </small>
             </div>
             <div>
-              <button class="btn btn-sm btn-success me-1" @click="respond(req.id, 'accept')">&#x2713;</button>
-              <button class="btn btn-sm btn-danger" @click="respond(req.id, 'reject')">&#x2717;</button>
+              <button
+                class="btn btn-sm btn-success me-1"
+                @click="respond(req.id, 'accept')"
+              >
+                &#x2713;
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                @click="respond(req.id, 'reject')"
+              >
+                &#x2717;
+              </button>
             </div>
           </div>
         </li>
@@ -46,34 +56,43 @@ import { useFriendRequestStore } from "../stores/friendRequestStore";
 import { useAuthStore } from "../stores/authStore";
 import { useUserStore } from "../stores/userStore";
 
+// Define the structure of a friend request
+interface FriendRequest {
+  id: number;
+  sender: string;
+  timestamp: string;
+}
+
 export default defineComponent({
   name: "FriendRequestsDropdown",
   setup() {
     const friendRequestStore = useFriendRequestStore();
-    const requests = computed(() => friendRequestStore.requests);
-    const loading = ref(false);
+    const requests = computed<FriendRequest[]>(() => friendRequestStore.requests);
+    const loading = ref<boolean>(false);
 
-    const fetchRequests = async () => {
+    const fetchRequests = async (): Promise<void> => {
       loading.value = true;
       await friendRequestStore.fetchRequests();
       loading.value = false;
     };
 
-    const respond = async (requestId: number, action: "accept" | "reject") => {
+    const respond = async (
+      requestId: number,
+      action: "accept" | "reject"
+    ): Promise<void> => {
       const authStore = useAuthStore();
       const userStore = useUserStore();
       try {
         await friendRequestStore.handleRequest(requestId, action);
         await authStore.fetchUser();
         await userStore.fetchUsers(userStore.minAge, userStore.maxAge, userStore.currentPage);
-        // alert(`Friend request ${action}ed successfully!`);
-      } catch (error) {
+      } catch (error: unknown) {
         alert("Error processing friend request");
         console.error(error);
       }
     };
 
-    const formatDate = (dateStr: string) => {
+    const formatDate = (dateStr: string): string => {
       const date = new Date(dateStr);
       return date.toLocaleString();
     };
