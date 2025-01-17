@@ -37,8 +37,8 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # path('profile/', ProfileView.as_view(), name='profile'),
     # path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
-    path('send-friend-request/', SendFriendRequestView.as_view(), name='send-friend-request'),
-    path('friend-requests/', FriendRequestListView.as_view(), name='friend-requests'),
-    path('friend-requests/<int:pk>/', FriendRequestActionView.as_view(), name='friend-request-action'),
+    path('send-friend-request/', send_friend_request_api, name='send-friend-request'),
+    path('fetch-friend-requests/', fetch_friend_requests_api , name='friend-requests'),
+    path('handle-friend-request/<int:pk>/', handle_friend_request_api, name='friend-request-action'),
 ]
 

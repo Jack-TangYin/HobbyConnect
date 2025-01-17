@@ -86,12 +86,14 @@ import { defineComponent, onMounted } from "vue";
 import { RouterView } from "vue-router";
 import { useAuthStore } from "./stores/authStore";
 import { useHobbiesStore } from "./stores/hobbiesStore";
+import { useFriendRequestStore } from "./stores/friendRequestStore";
 import FriendRequestsDropdown from "./components/FriendRequestsDropdown.vue";
 
 export default defineComponent({
   setup() {
     const authStore = useAuthStore();
     const hobbiesStore = useHobbiesStore();
+    const friendRequestStore = useFriendRequestStore();
 
     onMounted(async () => {
       try {
@@ -102,6 +104,10 @@ export default defineComponent({
         if (!hobbiesStore.hobbies.length) {
           console.log("Fetching hobbies data...");
           await hobbiesStore.fetchHobbies();
+        }
+        if (!friendRequestStore.requests.length) {
+          console.log("Fetching friend requests...");
+          await friendRequestStore.fetchRequests();
         }
         console.log("user: ", authStore.username);
         console.log("hobbies: ", hobbiesStore.hobbies);

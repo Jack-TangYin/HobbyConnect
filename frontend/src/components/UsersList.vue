@@ -55,16 +55,16 @@ export default defineComponent({
       }
     };
 
-    const sendFriendRequest = async (friendId: number) => {
+    const sendFriendRequest = async (receiver_id: number) => {
       try {
-        const response = await fetch(`${baseUrl}/api/friend-request/`, {
+        const response = await fetch(`${baseUrl}/api/send-friend-request/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
           },
           credentials: 'include',
-          body: JSON.stringify({ friend_id: friendId }),
+          body: JSON.stringify({ receiver_id: receiver_id }),
         });
         if (!response.ok) {
           throw new Error('Failed to send friend request.');

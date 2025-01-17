@@ -7,8 +7,8 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue';
-import AgeFilter from './AgeFilter.vue';
-import UsersList from './UsersList.vue';
+import AgeFilter from '../components/AgeFilter.vue';
+import UsersList from '../components/UsersList.vue';
 import { useUserStore } from '../stores/userStore';
 
 export default defineComponent({

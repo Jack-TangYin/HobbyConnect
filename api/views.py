@@ -352,64 +352,88 @@ def update_hobbies_api(request: HttpRequest) -> JsonResponse:
 def fetch_hobbies_api(request: HttpRequest) -> JsonResponse:
     """
     Returns a list of all hobbies available in the database.
-    Useful for frontend autocomplete.
     """
     hobbies = Hobby.objects.all()
     return JsonResponse({'hobbies': [h.as_dict() for h in hobbies]})
 
 
-class SendFriendRequestView(APIView):
-    permission_classes = [IsAuthenticated]
+@login_required
+@require_http_methods(["POST"])
+def send_friend_request_api(request: HttpRequest) -> JsonResponse:
+    """
+    Send a friend request to another user.
 
-    def post(self, request):
-        receiver_id = request.data.get('receiver_id')
-        if not receiver_id:
-            return Response({'error': 'Receiver ID is required.'}, status=400)
+    Expects a JSON payload with:
+      - "receiver_id": ID of the user to send the friend request to.
+    """
+    try:
+        data: Dict[str, Any] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-        try:
-            receiver = CustomUser.objects.get(id=receiver_id)
-            if FriendRequest.objects.filter(sender=request.user, receiver=receiver, status='pending').exists():
-                return Response({'error': 'Friend request already sent.'}, status=400)
+    receiver_id = data.get('receiver_id')
+    if not receiver_id:
+        return JsonResponse({'error': 'Receiver ID is required.'}, status=400)
 
-            FriendRequest.objects.create(sender=request.user, receiver=receiver)
-            return Response({'message': 'Friend request sent successfully!'}, status=201)
+    try:
+        receiver = CustomUser.objects.get(id=receiver_id)
+        if FriendRequest.objects.filter(sender=request.user, receiver=receiver, status='pending').exists():
+            return JsonResponse({'error': 'Friend request already sent.'}, status=400)
 
-        except CustomUser.DoesNotExist:
-            return Response({'error': 'User not found.'}, status=404)
-        
-class FriendRequestListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        friend_requests = FriendRequest.objects.filter(receiver=request.user, status='pending')
-        requests_data = [
-            {
-                'id': req.id,
-                'sender': req.sender.username,
-                'timestamp': req.timestamp,
-            } for req in friend_requests
-        ]
-        return Response(requests_data)
+        FriendRequest.objects.create(sender=request.user, receiver=receiver)
+        return JsonResponse({'message': 'Friend request sent successfully!'}, status=201)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
 
 
-class FriendRequestActionView(APIView):
-    permission_classes = [IsAuthenticated]
+@login_required
+@require_http_methods(["GET"])
+def fetch_friend_requests_api(request: HttpRequest) -> JsonResponse:
+    """
+    Fetch all pending friend requests for the logged-in user.
 
-    def post(self, request, pk):
-        action = request.data.get('action')  # 'accept' or 'reject'
+    Response:
+      - List of pending friend requests.
+    """
+    friend_requests = FriendRequest.objects.filter(receiver=request.user, status='pending')
+    requests_data = [
+        {
+            'id': req.id,
+            'sender': req.sender.username,
+            'timestamp': req.timestamp,
+        } for req in friend_requests
+    ]
+    return JsonResponse({'friend_requests': requests_data})
 
-        try:
-            friend_request = FriendRequest.objects.get(id=pk, receiver=request.user)
 
-            if action == 'accept':
-                friend_request.status = 'accepted'
-                # Optionally, add logic to create a friendship (e.g., adding to a friendship model)
-            elif action == 'reject':
-                friend_request.status = 'rejected'
-            else:
-                return Response({'error': 'Invalid action.'}, status=400)
+@login_required
+@require_http_methods(["POST"])
+def handle_friend_request_api(request: HttpRequest, pk: int) -> JsonResponse:
+    """
+    Handle an incoming friend request.
 
-            friend_request.save()
-            return Response({'message': f'Friend request {action}ed successfully!'})
-        except FriendRequest.DoesNotExist:
-            return Response({'error': 'Friend request not found.'}, status=404)
+    Expects a JSON payload with:
+      - "action": Either "accept" or "reject".
+    """
+    try:
+        data: Dict[str, Any] = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    action = data.get('action')
+    if action not in ['accept', 'reject']:
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+    try:
+        friend_request = FriendRequest.objects.get(id=pk, receiver=request.user)
+
+        if action == 'accept':
+            friend_request.status = 'accepted'
+            # Optionally, add logic to create a friendship (e.g., adding to a friendship model)
+        elif action == 'reject':
+            friend_request.status = 'rejected'
+
+        friend_request.save()
+        return JsonResponse({'message': f'Friend request {action}ed successfully!'}, status=200)
+    except FriendRequest.DoesNotExist:
+        return JsonResponse({'error': 'Friend request not found.'}, status=404)
