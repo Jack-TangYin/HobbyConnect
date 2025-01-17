@@ -263,8 +263,7 @@ export default defineComponent({
           throw new Error(profileError.value);
         }
         console.log("Profile updated", responseData);
-        profileMessage.value =
-          responseData.message || "Profile updated successfully.";
+        profileMessage.value = responseData.message || "Profile updated successfully.";
         await authStore.fetchUser();
       } catch (error: any) {
         console.error("Error updating profile:", error.message);

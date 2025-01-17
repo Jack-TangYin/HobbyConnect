@@ -5,6 +5,8 @@ export interface User {
     username: string;
     age: number;
     common_hobbies: number;
+    is_friend: boolean; // Added
+    has_pending_request: boolean; // Added
 }
 
 export interface SimilarUsersResponse {
@@ -15,7 +17,6 @@ export interface SimilarUsersResponse {
 }
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
-
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -29,7 +30,6 @@ export const useUserStore = defineStore('user', {
     actions: {
         async fetchUsers(minAge: number, maxAge: number, page: number) {
             try {
-                // Update current filters in state
                 this.minAge = minAge;
                 this.maxAge = maxAge;
                 const query = new URLSearchParams({
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', {
                     page: String(page),
                 });
                 const response = await fetch(`${baseUrl}/api/fetch-similar-users/?${query.toString()}`, {
-                    credentials: 'include', // include cookies if your backend requires authentication
+                    credentials: 'include',
                 });
                 if (!response.ok) {
                     throw new Error(`Error fetching users: ${response.statusText}`);

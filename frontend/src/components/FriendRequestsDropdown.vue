@@ -43,6 +43,8 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from "vue";
 import { useFriendRequestStore } from "../stores/friendRequestStore";
+import { useAuthStore } from "../stores/authStore";
+import { useUserStore } from "../stores/userStore";
 
 export default defineComponent({
   name: "FriendRequestsDropdown",
@@ -58,9 +60,13 @@ export default defineComponent({
     };
 
     const respond = async (requestId: number, action: "accept" | "reject") => {
+      const authStore = useAuthStore();
+      const userStore = useUserStore();
       try {
         await friendRequestStore.handleRequest(requestId, action);
-        alert(`Friend request ${action}ed successfully!`);
+        await authStore.fetchUser();
+        await userStore.fetchUsers(userStore.minAge, userStore.maxAge, userStore.currentPage);
+        // alert(`Friend request ${action}ed successfully!`);
       } catch (error) {
         alert("Error processing friend request");
         console.error(error);

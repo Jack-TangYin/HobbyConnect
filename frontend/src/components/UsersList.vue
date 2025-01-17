@@ -2,36 +2,54 @@
   <div class="users-list">
     <h2>Similar Users</h2>
     <div v-if="userStore.users.length === 0" class="no-results">
-      No similar users found.
+      <p>No similar users found. Try adjusting your filters.</p>
     </div>
     <div v-else class="users-container">
       <div v-for="user in userStore.users" :key="user.id" class="user-card">
         <div class="user-info">
+          <img
+            class="user-avatar"
+            :src="'https://ui-avatars.com/api/?name=' + user.username + '&size=128'"
+            alt="User Avatar"
+          />
           <h3>{{ user.username }}</h3>
-          <p>Age: {{ user.age }}</p>
-          <p>Common Hobbies: {{ user.common_hobbies }}</p>
+          <p><strong>Age:</strong> {{ user.age }}</p>
+          <p><strong>Common Hobbies:</strong> {{ user.common_hobbies }}</p>
         </div>
-        <button class="friend-btn" @click="sendFriendRequest(user.id)">
-          Send Friend Request
-        </button>
+        <div class="actions">
+          <button
+            v-if="!user.is_friend && !user.has_pending_request"
+            class="friend-btn"
+            @click="sendFriendRequest(user.id)"
+          >
+            🤝 Send Friend Request
+          </button>
+          <span v-else-if="user.is_friend" class="friend-status">
+            ✅ Friends
+          </span>
+          <span v-else class="friend-status">
+            ⏳ Request Sent
+          </span>
+        </div>
       </div>
     </div>
     <div class="pagination">
       <button @click="fetchPreviousPage" :disabled="userStore.currentPage === 1">
-        Previous
+        &laquo; Previous
       </button>
       <span>Page {{ userStore.currentPage }} of {{ userStore.totalPages }}</span>
       <button @click="fetchNextPage" :disabled="userStore.currentPage === userStore.totalPages">
-        Next
+        Next &raquo;
       </button>
     </div>
   </div>
 </template>
 
+
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue';
 import { useUserStore } from '../stores/userStore';
-import { getCSRFToken } from '../stores/authStore';
+import { getCSRFToken, useAuthStore } from '../stores/authStore';
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -39,6 +57,7 @@ export default defineComponent({
   name: 'UsersList',
   setup() {
     const userStore = useUserStore();
+    const authStore = useAuthStore();
 
     onMounted(async () => {
       await userStore.fetchUsers(userStore.minAge, userStore.maxAge, 1);
@@ -69,8 +88,7 @@ export default defineComponent({
         if (!response.ok) {
           throw new Error('Failed to send friend request.');
         }
-        const result = await response.json();
-        alert(result.message || 'Friend request sent successfully!');
+        await userStore.fetchUsers(userStore.minAge, userStore.maxAge, 1);
       } catch (error) {
         alert('Error sending friend request');
         console.error(error);
@@ -78,6 +96,7 @@ export default defineComponent({
     };
 
     return {
+      authStore,
       userStore,
       fetchPreviousPage,
       fetchNextPage,

@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import CustomUser, Hobby, FriendRequest
+from .models import CustomUser, Hobby, FriendRequest, Friendship
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from rest_framework.views import APIView
@@ -21,7 +21,9 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 from typing import Any, Dict
+from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
+from django.db import transaction
 
 
 @ensure_csrf_cookie
@@ -81,26 +83,11 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
 @require_http_methods(["GET"])
 def fetch_similar_users_api(request: HttpRequest) -> JsonResponse:
     """
-    Returns a paginated JSON list of users who have the most similar set of hobbies,
-    filtered by an age range. Only 10 users are returned per page.
-
-    Query Parameters:
-      - min_age: Minimum age of users (default: 0)
-      - max_age: Maximum age of users (default: 100)
-      - page: Page number (default: 1)
-
-    Response JSON structure:
-        {
-          "results": [ list of user dicts ],
-          "count": <total matching users>,
-          "current_page": <page number>,
-          "total_pages": <number of pages>
-        }
+    Returns a paginated JSON list of users who have hobbies in common
+    with the request.user, filtered by an age range [min_age, max_age],
+    sorted descending by number of common hobbies.
     """
-    # Log the query parameters (optional for debugging)
-    print("Query Params:", request.GET.dict())
-    
-    # Retrieve and convert query parameters
+    # Retrieve query parameters (with defaults).
     try:
         min_age = int(request.GET.get("min_age", 0))
     except (TypeError, ValueError):
@@ -116,35 +103,37 @@ def fetch_similar_users_api(request: HttpRequest) -> JsonResponse:
     except (TypeError, ValueError):
         page = 1
 
-    # Get the filtered and sorted queryset.
-    # This function returns users ordered by the number of common hobbies (desc)
+    # Filter + sort the users by number of common hobbies
     users_queryset = get_filtered_and_sorted_users(request.user, min_age, max_age)
-    
-    # Set up the paginator to display 10 users per page.
+
+    # Paginate (10 users per page)
     paginator = Paginator(users_queryset, 10)
     paged_users = paginator.get_page(page)
-    
-    # Build the list of users for the current page.
+
+    # Build the list of user data for JSON response
     users_list = []
     today = date.today()
     for u in paged_users:
-        # Calculate user's age if date_of_birth is present.
-        age = (today - u.date_of_birth).days // 365 if u.date_of_birth else None
+        age = None
+        if u.date_of_birth:
+            age = (today - u.date_of_birth).days // 365  # simple approximate
+
         users_list.append({
             "id": u.id,
             "username": u.username,
             "common_hobbies": u.common_hobbies,
             "age": age,
+            # If you have a custom method that returns the user’s friends:
+            "friends_ids": [f.id for f in u.get_friends()],
         })
-    
-    # Return only the users needed for the current page along with pagination info.
+
     response_data = {
         "results": users_list,
         "count": paginator.count,
         "current_page": paged_users.number,
         "total_pages": paginator.num_pages,
     }
-    
+
     return JsonResponse(response_data)
 
 
@@ -156,7 +145,7 @@ def logout_view(request):
     return JsonResponse({'message': 'Logged out'})
 
 
-def     user_api(request: HttpRequest) -> HttpResponse:
+def user_api(request: HttpRequest) -> HttpResponse:
     """
     API endpoint for the collection of users
     
@@ -407,33 +396,33 @@ def fetch_friend_requests_api(request: HttpRequest) -> JsonResponse:
 
 
 @login_required
-@require_http_methods(["POST"])
-def handle_friend_request_api(request: HttpRequest, pk: int) -> JsonResponse:
+def handle_friend_request_api(request, pk):
     """
-    Handle an incoming friend request.
-
-    Expects a JSON payload with:
-      - "action": Either "accept" or "reject".
+    Accept or reject a friend request.
     """
     try:
-        data: Dict[str, Any] = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        data = json.loads(request.body)
+        action = data.get("action")
+        if action not in ["accept", "reject"]:
+            return JsonResponse({"error": "Invalid action."}, status=400)
 
-    action = data.get('action')
-    if action not in ['accept', 'reject']:
-        return JsonResponse({'error': 'Invalid action.'}, status=400)
+        friend_request = get_object_or_404(FriendRequest, id=pk, receiver=request.user)
 
-    try:
-        friend_request = FriendRequest.objects.get(id=pk, receiver=request.user)
+        if action == "accept":
+            with transaction.atomic():
+                friend_request.status = "accepted"
+                friend_request.save()
+                # Create bidirectional friendship
+                Friendship.objects.get_or_create(user1=request.user, user2=friend_request.sender)
+                Friendship.objects.get_or_create(user1=friend_request.sender, user2=request.user)
+            return JsonResponse({"message": "Friend request accepted successfully."}, status=200)
 
-        if action == 'accept':
-            friend_request.status = 'accepted'
-            # Optionally, add logic to create a friendship (e.g., adding to a friendship model)
-        elif action == 'reject':
-            friend_request.status = 'rejected'
+        elif action == "reject":
+            friend_request.status = "rejected"
+            friend_request.save()
+            return JsonResponse({"message": "Friend request rejected."}, status=200)
 
-        friend_request.save()
-        return JsonResponse({'message': f'Friend request {action}ed successfully!'}, status=200)
     except FriendRequest.DoesNotExist:
-        return JsonResponse({'error': 'Friend request not found.'}, status=404)
+        return JsonResponse({"error": "Friend request not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
