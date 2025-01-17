@@ -24,6 +24,7 @@ from typing import Any, Dict
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
 from django.db import transaction
+from django.db.models import Q
 
 
 @ensure_csrf_cookie
@@ -116,15 +117,26 @@ def fetch_similar_users_api(request: HttpRequest) -> JsonResponse:
     for u in paged_users:
         age = None
         if u.date_of_birth:
-            age = (today - u.date_of_birth).days // 365  # simple approximate
+            age = (today - u.date_of_birth).days // 365
+            
+         # Check if there's already a Friendship
+        is_friend = Friendship.objects.filter(
+            Q(user1=request.user, user2=u) | Q(user1=u, user2=request.user)
+        ).exists()
+
+        # Check if there's a pending request in *either* direction
+        has_pending_request = FriendRequest.objects.filter(
+            Q(sender=request.user, receiver=u) | Q(sender=u, receiver=request.user),
+            status='pending'
+        ).exists()
 
         users_list.append({
             "id": u.id,
             "username": u.username,
             "common_hobbies": u.common_hobbies,
             "age": age,
-            # If you have a custom method that returns the user’s friends:
-            "friends_ids": [f.id for f in u.get_friends()],
+            "is_friend": is_friend,
+            "has_pending_request": has_pending_request,
         })
 
     response_data = {
