@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { UserData, Hobby, AuthState } from '../types/types';
+import router from '../router';
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -75,6 +76,7 @@ export const useAuthStore = defineStore('auth', {
                 } else {
                     this.user = null;
                     this.isAuthenticated = false;
+                    window.location.href = `${baseUrl}/login`;
                 }
             } catch (error) {
                 console.error('Failed to fetch user', error);
