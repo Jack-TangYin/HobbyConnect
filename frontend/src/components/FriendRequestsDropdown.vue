@@ -2,6 +2,7 @@
   <li class="nav-item dropdown position-relative">
     <!-- Notification bell button with badge if there are pending requests -->
     <a
+      id="friend-request-dropdown"
       class="nav-link dropdown-toggle"
       href="#"
       role="button"
@@ -30,7 +31,7 @@
               <small class="text-muted d-block">Sent at: {{ formatDate(req.timestamp) }}</small>
             </div>
             <div>
-              <button class="btn btn-sm btn-success me-1" @click="respond(req.id, 'accept')">&#x2713;</button>
+              <button id="success-btn" class="btn btn-sm btn-success me-1" @click="respond(req.id, 'accept')">&#x2713;</button>
               <button class="btn btn-sm btn-danger" @click="respond(req.id, 'reject')">&#x2717;</button>
             </div>
           </div>

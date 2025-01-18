@@ -21,6 +21,22 @@ TEST_CREDENTIALS = {
     'new_hobbies': 'Swimming, Eating'
 }
 
+FR1_TEST_CREDENTIALS = {
+    'username': 'FriendRequestTestUser19',
+    'email': 'frtu19@gmail.com',
+    'date_of_birth1': '01/01/2021',
+    'password': '12345678!',
+    'hobbies': 'FriendRequestTesting2',
+}
+
+FR2_TEST_CREDENTIALS = {
+    'username': 'FriendRequestTestUser22',
+    'email': 'frtu22@gmail.com',
+    'date_of_birth1': '01/01/2021',
+    'password': '12345678!',
+    'hobbies': 'FriendRequestTesting2',
+}
+
 
 class SignUpFormTest(LiveServerTestCase):
     def setUp(self):
@@ -517,4 +533,138 @@ class ConnectPageFilterUsersTest(LiveServerTestCase):
             except Exception as e:
                 self.fail(f"An error occurred while validating a user card: {e}")
 
+
+
+class FriendRequestTest(LiveServerTestCase):
+    def setUp(self):
+        # Initialize two separate drivers for two users
+        self.driver_user1 = webdriver.Chrome()
+        self.driver_user2 = webdriver.Chrome()
+        self.driver_user1.set_window_size(1280, 1000)
+        self.driver_user2.set_window_size(1280, 1000)
+
+    def tearDown(self):
+        # Quit both drivers after the test
+        self.driver_user1.quit()
+        self.driver_user2.quit()
+
+    def signup(self, driver, username, email, password):
+        """Helper method to sign up a new user."""
+        driver.get("http://localhost:8000/register")
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "username")))
+        username_field = driver.find_element(By.NAME, "username")
+        email_field = driver.find_element(By.NAME, "email")
+        date_of_birth_field = driver.find_element(By.NAME, "date_of_birth")
+        password1_field = driver.find_element(By.NAME, "password1")
+        password2_field = driver.find_element(By.NAME, "password2")
+        hobbies_field = driver.find_element(By.NAME, "hobbies")
+        submit_button = driver.find_element(By.ID, "submit")
+
+        
+        # Fill in the form
+        username_field.send_keys(username)
+        email_field.send_keys(email)
+        date_of_birth_field.send_keys("01/01/2000")  # Fixed date for testing
+        password1_field.send_keys(password)
+        password2_field.send_keys(password)
+        hobbies_field.send_keys(FR1_TEST_CREDENTIALS["hobbies"])
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", submit_button)
+        time.sleep(1)
+
+        # Click the button
+        submit_button.click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "menu-dropdown"))
+        )
+
+    def login(self, driver, username, password):
+        """Helper method to log in a user."""
+        driver.get("http://localhost:8000/login")
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "username")))
+        username_field = driver.find_element(By.NAME, "username")
+        password_field = driver.find_element(By.NAME, "password")
+        submit_button = driver.find_element(By.ID, "submit")
+
+        username_field.send_keys(username)
+        password_field.send_keys(password)
+        submit_button.click()
+
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "menu-dropdown"))
+        )
+
+    def test_friend_request_and_acceptance(self):
+        # Step 1: User 1 signs up and sends a friend request
+        self.signup(
+            self.driver_user1,
+            FR1_TEST_CREDENTIALS["username"],
+            FR1_TEST_CREDENTIALS["email"],
+            FR1_TEST_CREDENTIALS["password"]
+        )
+        self.driver_user1.get("http://localhost:5173/connect")
+        WebDriverWait(self.driver_user1, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "user-card"))
+        )
+
+        # Find the first user card with a "Send Friend Request" button and click it
+        user_cards = self.driver_user1.find_elements(By.CLASS_NAME, "user-card")
+        time.sleep(1)
+        friend_request_sent = False
+        for card in user_cards:
+            try:
+                send_request_button = card.find_element(By.CLASS_NAME, "friend-btn")
+                time.sleep(1)
+                send_request_button.click()
+                friend_request_sent = True
+                break
+            except Exception:
+                continue
+
+        time.sleep(1)
+        self.assertTrue(friend_request_sent, "No user available to send a friend request.")
+
+        # Step 2: User 2 logs in and accepts the friend request
+        self.login(
+            self.driver_user2,
+            FR2_TEST_CREDENTIALS["username"],
+            FR2_TEST_CREDENTIALS["password"]
+        )
+        self.driver_user2.get("http://localhost:5173/connect")
+        friend_request_dropdown = self.driver_user2.find_element(By.ID, "friend-request-dropdown")
+        time.sleep(1)
+        friend_request_dropdown.click()
+        time.sleep(1)
+        
+        # Accept the first friend request
+        WebDriverWait(self.driver_user2, 10).until(
+            EC.presence_of_element_located((By.ID, "success-btn"))
+        ).click()
+        time.sleep(1)
+
+        
+        # Wait until the element is present
+        friends_element = WebDriverWait(self.driver_user2, 10).until(
+            EC.presence_of_element_located((By.ID, "friends"))
+        )
+
+        # Assert the text of the element
+        self.assertEqual(friends_element.text, "✅ Friends ")
+
+        # Step 3: Verify the friendship status for User 1
+        WebDriverWait(self.driver_user1, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "user-card"))
+        )
+
+        # Check if the first user card shows the updated friend status
+        user_cards = self.driver_user1.find_elements(By.CLASS_NAME, "user-card")
+        friendship_confirmed = False
+        for card in user_cards:
+            try:
+                send_request_button = card.find_element(By.ID, "friends")
+                friendship_confirmed = True
+                break
+            except Exception:
+                continue
+
+        self.assertTrue(friendship_confirmed, "Friendship status was not updated for User 1.")
 

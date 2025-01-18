@@ -24,7 +24,7 @@
           >
             🤝 Send Friend Request
           </button>
-          <span v-else-if="user.is_friend" class="friend-status">
+          <span id="friends" v-else-if="user.is_friend" class="friend-status">
             ✅ Friends
           </span>
           <span v-else class="friend-status">
@@ -141,18 +141,37 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  word-wrap: break-word; /* Ensures long text wraps gracefully in all elements */
+}
+
+.user-info {
+  text-align: center; /* Optional: Aligns all text in the center for a cleaner look */
 }
 
 .user-info h3 {
   margin: 0;
   margin-bottom: 0.5rem;
   color: #333;
+  font-size: 1rem;
+  font-weight: bold;
+  white-space: nowrap; /* Prevents text wrapping */
+  overflow: hidden; /* Hides overflowing text */
+  text-overflow: ellipsis; /* Adds ellipsis for overflowing text */
+  max-width: 100%; /* Ensures it stays within the card width */
 }
 
 .user-info p {
   margin: 0.25rem 0;
   color: #555;
   font-size: 0.9rem;
+  overflow-wrap: break-word; /* Ensures text doesn't overflow its container */
+}
+
+.user-avatar {
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.5rem;
 }
 
 .friend-btn {
@@ -167,6 +186,12 @@ export default defineComponent({
 
 .friend-btn:hover {
   background-color: #218838;
+}
+
+.friend-status {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #555;
 }
 
 .pagination {
@@ -190,4 +215,5 @@ export default defineComponent({
   background-color: #cccccc;
   cursor: not-allowed;
 }
+
 </style>
