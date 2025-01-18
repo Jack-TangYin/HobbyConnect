@@ -18,19 +18,16 @@
 ### URL of Deployed Application: ###
 
 
-### Username & Password for the admin user ###
+### Username & Password for the Admin User ###
 - Username:
 - Password:
 
 
 ### Username & Passwords of 5 Test Users ###
-- Username ## 1 ##:
-- Password ## 1 ##:
-- Username ## 2 ##:
-- Password ## 2 ##:
-- Username ## 3 ##:
-- Password ## 3 ##:
-- Username ## 4 ##:
-- Password ## 4 ##:
-- Username ## 5 ##:
-- Password ## 5 ##:
+- Test User 1              Username:                       Password:
+- Test User 2              Username:                       Password:
+- Test User 3              Username:                       Password:
+- Test User 4              Username:                       Password:
+- Test User 5              Username:                       Password:
+  
+
