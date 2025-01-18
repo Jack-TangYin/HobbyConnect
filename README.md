@@ -16,14 +16,15 @@
 
 <hr>
 
-
 ### URL of Deployed Application: ###
 
+<hr>
 
 ### Username & Password for the Admin User ###
 - Username:
 - Password:
 
+<hr>
 
 ### Username & Passwords of 5 Test Users ###
 - Test User 1 | Username: | Password:
