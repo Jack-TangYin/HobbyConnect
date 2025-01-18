@@ -4,15 +4,15 @@
 
 **`1. Tang Yin`**
 - Initially Asssigned Task (on LearnOuts): 1, 2, 3, 9
-- Actual Contribution to the final deliverable: 1, 2, 3, 9
+- Actual Contribution to the Final Deliverable: 1, 2, 3, 9
   
 **`2. Kenzo Dubreuil`**
 - Initially Asssigned Task (on LearnOuts): 4, 5, 9
-- Actual Contribution to the final deliverable: 4, 5, 9
+- Actual Contribution to the Final Deliverable: 4, 5, 9
 
 **`3. Roman Gurung`**
 - Initially Asssigned Task (on LearnOuts): 6, 7, 8, 9
-- Actual Contribution to the final deliverable: 6, 7, 8, 9
+- Actual Contribution to the Final Deliverable: 6, 7, 8, 9
 
 <hr>
 
