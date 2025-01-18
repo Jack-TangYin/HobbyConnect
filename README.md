@@ -1,4 +1,4 @@
-# ECS639U-GroupCoursework-Group60
+# ECS639U-Group Coursework-Group60
 
 ### List of Group Members & Corresponding Contributions ###
 
