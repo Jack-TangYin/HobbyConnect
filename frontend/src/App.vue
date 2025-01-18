@@ -45,6 +45,7 @@
             </li>
             <li class="nav-item dropdown" style="position: relative; bottom: -2px">
               <a
+                id="menu-dropdown"
                 class="nav-link dropdown-toggle"
                 href="#"
                 role="button"
@@ -54,7 +55,7 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'Profile Page' }">
+                  <router-link id="profile" class="dropdown-item" :to="{ name: 'Profile Page' }">
                     Profile
                   </router-link>
                 </li>
@@ -67,7 +68,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <button class="dropdown-item" @click="logout()">Sign Out</button>
+                  <button id="logout" class="dropdown-item" @click="logout()">Sign Out</button>
                 </li>
               </ul>
             </li>

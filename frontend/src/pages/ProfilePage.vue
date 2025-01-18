@@ -55,7 +55,7 @@
 
         <!-- Edit Profile Button -->
         <div class="text-end">
-          <router-link to="/edit-profile" class="btn btn-primary btn-lg rounded-pill">
+          <router-link id="edit-profile" to="/edit-profile" class="btn btn-primary btn-lg rounded-pill">
             <i class="bi bi-pencil-square"></i> Edit Profile
           </router-link>
         </div>

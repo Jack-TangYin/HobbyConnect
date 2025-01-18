@@ -9,3 +9,5 @@ django-crispy-forms==2.3.0
 crispy-bootstrap5
 mysqlclient==2.2.7
 djangorestframework==3.15.2
+pytest
+selenium

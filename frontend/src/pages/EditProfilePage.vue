@@ -36,7 +36,7 @@
           placeholder="Leave blank to keep the same"
         />
       </div>
-      <button type="submit" class="btn btn-primary me-2">
+      <button id="update-profile" type="submit" class="btn btn-primary me-2">
         Save Profile Changes
       </button>
       <button type="button" class="btn btn-secondary" @click="clearProfileForm">
@@ -79,10 +79,10 @@
           class="form-control"
         />
       </div>
-      <button type="submit" class="btn btn-primary me-2">
+      <button id="update-password" type="submit" class="btn btn-primary me-2">
         Change Password
       </button>
-      <button type="button" class="btn btn-secondary" @click="clearPasswordForm">
+      <button id="clear-password" type="button" class="btn btn-secondary" @click="clearPasswordForm">
         Clear
       </button>
       <!-- Display error or success message for password section -->
@@ -94,7 +94,7 @@
 
     <!-- Hobbies update -->
     <div class="mb-4">
-      <h3>Manage Hobbies</h3>
+      <h3 id="click-here">Manage Hobbies</h3>
       <div class="mb-3">
         <label for="new_hobby" class="form-label">Add Hobby</label>
         <!-- Custom Autocomplete Input with Dropdown -->
@@ -127,6 +127,7 @@
         </div>
 
         <button
+          id="add-hobby"
           type="button"
           class="btn btn-success mt-2 me-2"
           @click="handleAddHobby"
@@ -144,17 +145,19 @@
         <span v-if="hobbiesError" class="ms-2 text-danger">{{ hobbiesError }}</span>
         <span v-else-if="hobbiesMessage" class="ms-2 text-success">{{ hobbiesMessage }}</span>
       </div>
-      <div>
+      <div id="hobbies-list">
         <h4>Your Hobbies:</h4>
         <span v-if="user.hobbies && user?.hobbies.length">
           <span
             v-for="hobby in user?.hobbies"
             :key="hobby.id"
+            :id="hobby.name"
             class="badge rounded-pill text-black fs-6 px-3 py-2 me-2 mb-2"
             style="background-color: #fee715"
           >
             {{ hobby.name }}
             <button
+              :id="'delete-' + hobby.name"
               type="button"
               class="btn-close btn-close-white ms-2"
               aria-label="Remove"
@@ -167,7 +170,7 @@
 
       <!-- Return Button -->
       <div class="text-center">
-        <button type="button" class="btn btn-danger" @click="cancelEdit">
+        <button id="return-button" type="button" class="btn btn-danger" @click="cancelEdit">
           Return
         </button>
       </div>
