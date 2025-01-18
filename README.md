@@ -24,10 +24,11 @@
 
 
 ### Username & Passwords of 5 Test Users ###
-- Test User 1              Username:                       Password:
-- Test User 2              Username:                       Password:
-- Test User 3              Username:                       Password:
-- Test User 4              Username:                       Password:
-- Test User 5              Username:                       Password:
+- Test User 1 | Username: | Password:
+- Test User 2 | Username: | Password:
+- Test User 3 | Username: | Password:
+- Test User 4 | Username: | Password:
+- Test User 5 | Username: | Password:
+  
   
 
