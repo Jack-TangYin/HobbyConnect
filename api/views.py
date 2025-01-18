@@ -322,15 +322,18 @@ def update_hobbies_api(request: HttpRequest) -> JsonResponse:
     user: CustomUser = request.user  # type: ignore
 
     if action == "add":
-        hobby_name: str = data.get('hobby', '').strip()
-        if not hobby_name:
-            return JsonResponse({'error': 'Hobby name required'}, status=400)
-        # get_or_create returns a tuple of (object, created)
-        hobby, _ = Hobby.objects.get_or_create(name=hobby_name)
-        user.hobbies.add(hobby)
-        user.save()
+        hobby_names: list[str] = [h.strip() for h in data.get('hobby', '').split(',') if h.strip()]
+        print(hobby_names)
+        for hobby_name in hobby_names:
+            if not hobby_name:
+                return JsonResponse({'error': 'Hobby name required'}, status=400)
+            # get_or_create returns a tuple of (object, created)
+            hobby, _ = Hobby.objects.get_or_create(name=hobby_name)
+            print("hobby:", hobby)
+            user.hobbies.add(hobby)
+            user.save()
         return JsonResponse({
-            'message': f'Hobby "{hobby_name}" added',
+            'message': f'Hobby "{", ".join(hobby_names)}" added',
             'hobbies': [h.as_dict() for h in user.hobbies.all()]
         })
     elif action == "remove":

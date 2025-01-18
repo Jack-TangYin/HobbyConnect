@@ -27,16 +27,21 @@ class CustomUser(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
     def as_dict(self):
+        dob = self.date_of_birth.strftime('%d/%m/%Y') if self.date_of_birth else None
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'date_of_birth': self.date_of_birth,
+            'dateOfBirth': dob,
             'hobbies': [h.as_dict() for h in self.hobbies.all()],
-            'friends': [{'id': friend.id, 'username': friend.username, 'email': friend.email} for friend in self.get_friends()],
+            'friends': [
+                {'id': friend.id, 'username': friend.username, 'email': friend.email}
+                for friend in self.get_friends()
+            ],
         }
+
 
     def get_friends(self):
         """
