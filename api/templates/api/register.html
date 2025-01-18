@@ -27,7 +27,7 @@
         <form method="post" class="mt-4">
           {% csrf_token %} {{ form|crispy }}
 
-          <button type="submit" class="btn btn-primary w-100">Continue</button>
+          <button id="submit" type="submit" class="btn btn-primary w-100">Continue</button>
 
           <div class="text-center mt-3">
             Already have an account?
