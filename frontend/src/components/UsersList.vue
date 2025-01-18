@@ -13,7 +13,7 @@
             alt="User Avatar"
           />
           <h3>{{ user.username }}</h3>
-          <p><strong>Age:</strong> {{ user.age }}</p>
+          <p id="age"><strong>Age:</strong> {{ user.age }}</p>
           <p><strong>Common Hobbies:</strong> {{ user.common_hobbies }}</p>
         </div>
         <div class="actions">

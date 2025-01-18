@@ -1,3 +1,4 @@
+import re
 from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -388,3 +389,132 @@ class AddAndRemoveHobbiesTest(LiveServerTestCase):
                 WebDriverWait(driver, 5).until(EC.invisibility_of_element_located((By.CSS_SELECTOR, f"span#{hobby}"))),
                 f"Hobby span with id '{hobby}' is still visible after deletion."
             )
+
+
+class ConnectPageFilterUsersTest(LiveServerTestCase):
+
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.driver.set_window_size(1280, 800)
+
+    def tearDown(self):
+        self.driver.quit()
+
+    def login(self):
+        """Helper method to log in the test user."""
+        driver = self.driver
+        driver.get("http://localhost:8000/login")
+        # Wait until the username field is present
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'username')))
+        username_field = driver.find_element(By.NAME, 'username')
+        password_field = driver.find_element(By.NAME, 'password')
+        submit_button = driver.find_element(By.ID, 'submit')
+        username_field.send_keys(TEST_CREDENTIALS['username'])
+        password_field.send_keys(TEST_CREDENTIALS['password'])
+        time.sleep(1)
+        submit_button.click()
+        # Wait until login processing is complete.
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'menu-dropdown'))
+        )
+        
+
+class ConnectPageFilterUsersTest(LiveServerTestCase):
+
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.driver.set_window_size(1280, 800)
+
+    def tearDown(self):
+        self.driver.quit()
+
+    def login(self):
+        """Helper method to log in the test user."""
+        driver = self.driver
+        driver.get("http://localhost:8000/login")
+        # Wait until the username field is present.
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'username')))
+        username_field = driver.find_element(By.NAME, 'username')
+        password_field = driver.find_element(By.NAME, 'password')
+        submit_button = driver.find_element(By.ID, 'submit')
+        username_field.send_keys(TEST_CREDENTIALS['username'])
+        password_field.send_keys(TEST_CREDENTIALS['password'])
+        time.sleep(1)
+        submit_button.click()
+        # Wait until login processing is complete.
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'menu-dropdown'))
+        )
+
+    def test_age_filter_functionality(self):
+        driver = self.driver
+
+        # Log the user in.
+        self.login()
+
+        # Navigate to the Connect Page (adjust the URL if needed).
+        driver.get("http://localhost:5173/connect")
+        time.sleep(2)  # Allow time for the page to load
+
+        wait = WebDriverWait(driver, 10)
+
+        # Find the min and max age input fields (they have IDs: minAge and maxAge).
+        min_age_input = wait.until(EC.visibility_of_element_located((By.ID, "minAge")))
+        max_age_input = wait.until(EC.visibility_of_element_located((By.ID, "maxAge")))
+
+        # Define the filter values.
+        filter_min_age = "21"
+        filter_max_age = "30"
+
+        # Clear and fill in the new filter values.
+        min_age_input.clear()
+        min_age_input.send_keys(filter_min_age)
+        max_age_input.clear()
+        max_age_input.send_keys(filter_max_age)
+
+        # Click the "Apply Filter" button.
+        apply_button = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Apply Filter')]"))
+        )
+        apply_button.click()
+
+        # Wait for the Users List to update by waiting for either a user card or a "no results" message.
+        try:
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "user-card")))
+        except Exception:
+            # If no user card is present, verify that the "no similar users found" message is displayed.
+            no_results = driver.find_element(By.CSS_SELECTOR, ".no-results p")
+            self.assertIn("No similar users found", no_results.text)
+            # Since there are no user cards, we consider this a valid outcome.
+            return
+
+        time.sleep(1)  # Optional extra wait for asynchronous updates
+
+        # Retrieve all user cards.
+        user_cards = driver.find_elements(By.CLASS_NAME, "user-card")
+
+        # If there are no user cards, also check for the no results message.
+        if len(user_cards) == 0:
+            no_results = driver.find_element(By.CSS_SELECTOR, ".no-results p")
+            self.assertIn("No similar users found", no_results.text)
+            return
+
+        # Otherwise, for each user card, verify that the age is within the filter range.
+        for card in user_cards:
+            try:
+                # Use the id "age" to find the age element.
+                age_element = card.find_element(By.ID, "age")
+                # The text is expected to be in the format "Age: 27"
+                age_text = age_element.text  # e.g. "Age: 27"
+                # Remove the "Age:" prefix and strip any whitespace.
+                age_value = age_text.replace("Age:", "").strip()
+                self.assertTrue(age_value.isdigit(), f"Age value '{age_value}' is not numeric.")
+                age = int(age_value)
+                self.assertTrue(
+                    int(filter_min_age) <= age <= int(filter_max_age),
+                    f"User age {age} is not between {filter_min_age} and {filter_max_age}."
+                )
+            except Exception as e:
+                self.fail(f"An error occurred while validating a user card: {e}")
+
+
