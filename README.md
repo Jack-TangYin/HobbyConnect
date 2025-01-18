@@ -15,22 +15,22 @@
 - Actual Contribution to the final deliverable: 6, 7, 8, 9
 
 
-## URL of Deployed Application: ## 
+### URL of Deployed Application: ###
 
 
-## Username & Password for the admin user ##
+### Username & Password for the admin user ###
 - Username:
 - Password:
 
 
-**`Username & Passwords of 5 Test Users`**
-- Username ##1##:
-- Password **1**:
-- Username **2**:
-- Password **2**:
-- Username **3**:
-- Password **3**:
-- Username **4**:
-- Password **4**:
-- Username **5**:
-- Password **5**:
+### Username & Passwords of 5 Test Users ###
+- Username ### 1 ###:
+- Password ### 1 ###:
+- Username ### 2 ###:
+- Password ### 2 ###:
+- Username ### 3 ###:
+- Password ### 3 ###:
+- Username ### 4 ###:
+- Password ### 4 ###:
+- Username ### 5 ###:
+- Password ### 5 ###:
