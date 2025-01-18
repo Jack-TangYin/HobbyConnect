@@ -14,6 +14,8 @@
 - Initially Asssigned Task (on LearnOuts): 6, 7, 8, 9
 - Actual Contribution to the final deliverable: 6, 7, 8, 9
 
+<hr>
+
 
 ### URL of Deployed Application: ###
 
