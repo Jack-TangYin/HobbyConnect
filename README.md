@@ -1,6 +1,6 @@
 # ECS639U-GroupCoursework-Group60
 
-## List of Group Members & Corresponding Contributions ## 
+### List of Group Members & Corresponding Contributions ###
 
 **`1. Tang Yin`**
 - Initially Asssigned Task (on LearnOuts): 1, 2, 3, 9
