@@ -17,11 +17,15 @@ import { useUserStore } from '../stores/userStore';
 export default defineComponent({
   name: 'AgeFilter',
   setup() {
-    const minAge = ref(0);
-    const maxAge = ref(100);
+    // Define min and max age as number refs
+    const minAge = ref<number>(0);
+    const maxAge = ref<number>(100);
+
+    // Pinia store instance
     const userStore = useUserStore();
 
-    const applyFilter = () => {
+    // Apply filter method with explicit typing
+    const applyFilter = (): void => {
       userStore.fetchUsers(minAge.value, maxAge.value, 1);
     };
 

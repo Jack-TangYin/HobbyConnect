@@ -1,123 +1,122 @@
-// stores/hobbiesStore.ts
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { Hobby } from '../types/types';
+import type { Hobby } from '../types/types';
 import { getCSRFToken } from './authStore';
 
 export const useHobbiesStore = defineStore('hobbies', () => {
-    const hobbies = ref<Hobby[]>([]);
-    const isLoading = ref(false);
-    const error = ref<string | null>(null);
-    const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
-    console.log('baseUrl', baseUrl);
+  const hobbies = ref<Hobby[]>([]);
+  const isLoading = ref<boolean>(false);
+  const error = ref<string | null>(null);
+  const baseUrl: string = import.meta.env.VITE_APP_API_BASE_URL as string;
 
-    // Fetch all hobbies from the backend
-    const fetchHobbies = async () => {
-        isLoading.value = true;
-        error.value = null;
-        try {
-            const response = await fetch(`${baseUrl}/api/fetch-hobbies/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
-                },
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch hobbies.');
-            }
-            const data = await response.json();
-            hobbies.value = data.hobbies;
-        } catch (err: any) {
-            error.value = err.message || 'An error occurred while fetching hobbies.';
-        } finally {
-            isLoading.value = false;
-        }
-    };
+  // Fetch all hobbies from the backend
+  const fetchHobbies = async (): Promise<void> => {
+    isLoading.value = true;
+    error.value = null;
 
-    // Add a hobby (handles both existing and new hobbies)
-    const addHobby = async (hobbyName: string) => {
-        try {
-            const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(), // Ensure you have this utility
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    action: 'add',
-                    hobby: hobbyName.trim(),
-                }),
-            });
+    try {
+      const response = await fetch(`${baseUrl}/api/fetch-hobbies/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        credentials: 'include',
+      });
 
-            const data = await response.json();
+      if (!response.ok) {
+        throw new Error('Failed to fetch hobbies.');
+      }
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add hobby.');
-            }
+      const data: { hobbies: Hobby[] } = await response.json();
+      hobbies.value = data.hobbies;
+    } catch (err: unknown) {
+      error.value = (err instanceof Error) ? err.message : 'An error occurred while fetching hobbies.';
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
-            // Optionally, you can update the hobbies list here or refetch
-            await fetchHobbies();
+  // Add a hobby (handles both existing and new hobbies)
+  const addHobby = async (hobbyName: string): Promise<string> => {
+    try {
+      const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: 'add',
+          hobby: hobbyName.trim(),
+        }),
+      });
 
-            return data.message;
-        } catch (err: any) {
-            throw new Error(err.message || 'An error occurred while adding the hobby.');
-        }
-    };
+      const data: { message: string } = await response.json();
 
-    // Remove a hobby from the user (does not delete from Hobby table)
-    const removeHobby = async (hobbyId: string) => {
-        try {
-            const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    action: 'remove',
-                    hobby_id: hobbyId,
-                }),
-            });
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add hobby.');
+      }
 
-            const data = await response.json();
+      await fetchHobbies(); // Optionally refetch the hobbies
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to remove hobby.');
-            }
+      return data.message;
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error) ? err.message : 'An error occurred while adding the hobby.';
+      throw new Error(errorMessage);
+    }
+  };
 
-            // Optionally, update the hobbies list here or refetch
-            await fetchHobbies();
+  // Remove a hobby from the user (does not delete from Hobby table)
+  const removeHobby = async (hobbyId: string): Promise<string> => {
+    try {
+      const response = await fetch(`${baseUrl}/api/update-hobbies/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: 'remove',
+          hobby_id: hobbyId,
+        }),
+      });
 
-            return data.message;
-        } catch (err: any) {
-            throw new Error(err.message || 'An error occurred while removing the hobby.');
-        }
-    };
+      const data: { message: string } = await response.json();
 
-    // Get a hobby by name (useful for autocomplete)
-    const getHobbyByName = (name: string) => {
-        return hobbies.value.find(
-            (hobby) => hobby.name.toLowerCase() === name.toLowerCase()
-        );
-    };
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to remove hobby.');
+      }
 
-    // Computed property for autocomplete suggestions
-    const autocompleteSuggestions = computed(() => {
-        return hobbies.value.map((hobby) => hobby.name);
-    });
+      await fetchHobbies(); // Optionally refetch the hobbies
 
-    return {
-        hobbies,
-        isLoading,
-        error,
-        fetchHobbies,
-        addHobby,
-        removeHobby,
-        getHobbyByName,
-        autocompleteSuggestions,
-    };
+      return data.message;
+    } catch (err: unknown) {
+      const errorMessage = (err instanceof Error) ? err.message : 'An error occurred while removing the hobby.';
+      throw new Error(errorMessage);
+    }
+  };
+
+  // Get a hobby by name (useful for autocomplete)
+  const getHobbyByName = (name: string): Hobby | undefined => {
+    return hobbies.value.find((hobby) => hobby.name.toLowerCase() === name.toLowerCase());
+  };
+
+  // Computed property for autocomplete suggestions
+  const autocompleteSuggestions = computed<string[]>(() => {
+    return hobbies.value.map((hobby) => hobby.name);
+  });
+
+  return {
+    hobbies,
+    isLoading,
+    error,
+    fetchHobbies,
+    addHobby,
+    removeHobby,
+    getHobbyByName,
+    autocompleteSuggestions,
+  };
 });
