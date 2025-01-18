@@ -4,6 +4,8 @@ from django.views.generic import CreateView, TemplateView, UpdateView
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+
+from api.forms import CustomUserChangeForm, CustomUserCreationForm
 from .models import CustomUser, Hobby, FriendRequest, Friendship
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -15,6 +17,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
 from datetime import date

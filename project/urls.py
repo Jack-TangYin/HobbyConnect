@@ -24,5 +24,5 @@ urlpatterns = [
     path('', include('api.urls')),
     # path('', TemplateView.as_view(template_name='home.html'), name='home'),
     path('health', lambda request: HttpResponse("OK")),
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
 ]

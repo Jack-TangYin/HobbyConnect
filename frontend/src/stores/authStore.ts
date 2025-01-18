@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { UserData, Hobby, AuthState } from '../types/types';
-import router from '../router';
 
 const baseUrl: string = import.meta.env.VITE_APP_API_BASE_URL as string;
 

@@ -26,18 +26,13 @@ from django.urls import include, path
 from django.http import HttpResponse
 from django.contrib.auth import views as auth_views
 from django.urls.resolvers import URLPattern
-from .views import (
-    set_csrf_token, logout_view, users_api, user_api, update_profile_api,
-    change_password_api, update_hobbies_api, fetch_hobbies_api, fetch_similar_users_api,
-    send_friend_request_api, fetch_friend_requests_api, handle_friend_request_api, SignUpView
-)
+from .views import *
 
 # Type annotation for urlpatterns
 urlpatterns: List[URLPattern] = [
     path('set-csrf-token/', set_csrf_token, name='set_csrf_token'),
     path('login/', auth_views.LoginView.as_view(template_name='api/login.html'), name='login'),
     path('logout/', logout_view, name='logout'),
-    path('users/', users_api, name='users api'),
     path('user/', user_api, name='user api'),
     path('update-profile/', update_profile_api, name='update profile api'),
     path('change-password/', change_password_api, name='change password api'),

@@ -1,4 +1,5 @@
-from typing import List, Dict, Any, QuerySet
+from typing import List, Dict, Any
+from django.db.models.query import QuerySet
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings

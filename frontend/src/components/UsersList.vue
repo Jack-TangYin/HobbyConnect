@@ -50,16 +50,6 @@ import { defineComponent, onMounted } from 'vue';
 import { useUserStore } from '../stores/userStore';
 import { getCSRFToken, useAuthStore } from '../stores/authStore';
 
-// Define the structure of a User object
-interface User {
-  id: number;
-  username: string;
-  age?: number; // Optional if the user does not have a DOB
-  common_hobbies?: number; // Optional, since it might not be computed
-  is_friend: boolean;
-  has_pending_request: boolean;
-}
-
 const baseUrl: string = import.meta.env.VITE_APP_API_BASE_URL;
 
 export default defineComponent({
