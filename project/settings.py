@@ -106,22 +106,26 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': database.config()
-# }
+DATABASES = {
+    'default': database.config()
+}
 
 # Get the database information from the environment variable (.env file) ~ os.getenv('...')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_hobbyconnect',  # Database name - use this when creating your local database (or change the name)
-        'USER': 'root',
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'),  # Database password
-        'HOST':'127.0.0.1', 
-        'PORT':'3306',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'django_hobbyconnect',  # Database name - use this when creating your local database (or change the name)
+#         'USER': 'root',
+#         'PASSWORD': os.getenv('DATABASE_PASSWORD'),  # Database password
+#         'HOST':'127.0.0.1', 
+#         'PORT':'3306',
+#     }
+# }
+
+
+
+
 
 AUTH_USER_MODEL = 'api.CustomUser'
 
